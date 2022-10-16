@@ -6,6 +6,8 @@ import { ApiTags } from '@nestjs/swagger';
 export class AdminController {
   @Get()
   admin(): string {
-    return 'I am admin';
+    const a: string = '';
+    a.toString();
+    return 'I am  admin';
   }
 }
