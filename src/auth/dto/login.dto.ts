@@ -1,25 +1,13 @@
-import { ApiProperty } from '@nestjs/swagger';
 import {
   IsEmail,
-  IsInt,
   IsNotEmpty,
-  IsString,
   Matches,
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
-export class RegisterDto {
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  readonly firstName: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  readonly lastName: string;
-
+export class LoginDto {
   @ApiProperty()
   @IsEmail()
   @IsNotEmpty()
@@ -35,11 +23,4 @@ export class RegisterDto {
       ' A password at least contains one numeric digit, one uppercase char and one lowercase char',
   })
   readonly password: string;
-
-  @IsNotEmpty()
-  @IsInt()
-  @Matches(/^80\((17|29|33|44)\)[0-9]{7}$/, {
-    message: 'Wrong phone number',
-  })
-  readonly phone: string;
 }

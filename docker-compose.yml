@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  db:
+    container_name: car-shop_db
+    image: mongo
+    volumes:
+      - ./mongo/data:/data/db
+    ports:
+      - 8007:27017

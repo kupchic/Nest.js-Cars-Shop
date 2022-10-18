@@ -6,6 +6,7 @@ import { CustomerModule } from './customer/customer.module';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './user/user.module';
 import { MongooseModule } from '@nestjs/mongoose';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -13,11 +14,13 @@ import { MongooseModule } from '@nestjs/mongoose';
       envFilePath: '.env',
       isGlobal: true,
     }),
+    MongooseModule.forRoot('mongodb://localhost:8007'),
     AdminModule,
     CustomerModule,
     ManagerModule,
     ProductModule,
     UserModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],
