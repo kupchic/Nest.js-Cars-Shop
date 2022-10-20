@@ -3,17 +3,19 @@ import {
   Controller,
   HttpStatus,
   Post,
+  Req,
   Res,
-  UsePipes,
-  ValidationPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UserService } from '../user/user.service';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { from, map } from 'rxjs';
 import { RegisterDto } from './dto/register.dto';
-import { LoginDto } from './dto/login.dto';
+import { ApiTags } from '@nestjs/swagger';
+import { LocalAuthGuard } from './guards/local.guard';
 
+@ApiTags('Auth Module')
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -22,16 +24,15 @@ export class AuthController {
   ) {}
 
   @Post('/register')
-  @UsePipes(ValidationPipe)
   register(@Body() registerDTO: RegisterDto, @Res() res: Response): any {
     return from(this.userService.registerUser(registerDTO)).pipe(
       map(() => res.status(HttpStatus.CREATED).send()),
     );
   }
 
+  @UseGuards(LocalAuthGuard)
   @Post('/login')
-  @UsePipes(ValidationPipe)
-  async login(@Body() loginDto: LoginDto, @Res() res: Response): Promise<any> {
-    return this.authService.login(loginDto);
+  async login(@Req() req: Request): Promise<any> {
+    return this.authService.login(req.user as any);
   }
 }

@@ -10,7 +10,9 @@ import {
 import { User } from './user.schema';
 import { UserService } from './user.service';
 import { Response } from 'express';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Users Module')
 @Controller('users')
 export class UserController {
   constructor(private userService: UserService) {}

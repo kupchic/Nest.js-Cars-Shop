@@ -1,10 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { UserRoles } from './entities/user-roles.enum';
-import mongoose from 'mongoose';
+import mongoose, { Document } from 'mongoose';
 
 @Schema()
 export class User {
-  // extends RegisterDto ??
   @Prop()
   firstName: string;
 
@@ -21,7 +20,7 @@ export class User {
   phone: string;
 
   @Prop()
-  userRole: UserRoles;
+  roles: [UserRoles];
 }
 
 export const UserSchema: mongoose.Schema<User> =

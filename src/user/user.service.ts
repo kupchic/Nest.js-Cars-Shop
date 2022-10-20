@@ -18,11 +18,12 @@ export class UserService {
       );
     }
     const hashedPass: string = await bcrypt.hash(registerDto.password, 10);
+
     return this.userModel.create({
       ...registerDto,
       password: hashedPass,
-      userRole: UserRoles.CUSTOMER,
-    });
+      roles: [UserRoles.CUSTOMER],
+    } as User);
   }
 
   async getAllUsers(): Promise<User[]> {
