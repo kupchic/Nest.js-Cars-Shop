@@ -13,6 +13,12 @@ export class LoginDto {
   @IsNotEmpty()
   readonly email: string;
 
+  @ApiProperty({
+    maxLength: 20,
+    minLength: 8,
+    description:
+      'A password should contain at least one numeric digit, one uppercase char and one lowercase char',
+  })
   @IsNotEmpty()
   @MinLength(8, { message: ' The min length of password is 8 ' })
   @MaxLength(20, {
@@ -20,7 +26,7 @@ export class LoginDto {
   })
   @Matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,20}$/, {
     message:
-      ' A password at least contains one numeric digit, one uppercase char and one lowercase char',
+      'A password should contain at least one numeric digit, one uppercase char and one lowercase char',
   })
   readonly password: string;
 }

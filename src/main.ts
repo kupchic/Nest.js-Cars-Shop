@@ -6,6 +6,7 @@ import { INestApplication } from '@nestjs/common';
 async function bootstrap(): Promise<any> {
   const PORT: string = process.env.PORT || '5000';
   const app: INestApplication = await NestFactory.create(AppModule);
+  app.useGlobalGuards();
   app.enableCors();
   const config: Omit<OpenAPIObject, 'paths'> = new DocumentBuilder()
     .setTitle('Cars Shop')

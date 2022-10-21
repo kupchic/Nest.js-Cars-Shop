@@ -1,21 +1,25 @@
-import {
-  ExecutionContext,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { ExecutionContext, Injectable } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
+import { Observable } from 'rxjs/internal/Observable';
+import { IS_PUBLIC_KEY } from 'src/common/decorators/public-decorator';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
-  canActivate(context: ExecutionContext): any {
-    return super.canActivate(context);
+  constructor(private reflector: Reflector) {
+    super();
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  handleRequest(err: any, user: any, info: any): any {
-    if (err || !user) {
-      throw err || new UnauthorizedException();
+  canActivate(
+    context: ExecutionContext,
+  ): boolean | Promise<boolean> | Observable<boolean> {
+    const isPublic: boolean = this.reflector.getAllAndOverride<boolean>(
+      IS_PUBLIC_KEY,
+      [context.getHandler(), context.getClass()],
+    );
+    if (isPublic) {
+      return true;
     }
-    return user;
+    return super.canActivate(context);
   }
 }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { User } from '../user/user.schema';
 import * as bcrypt from 'bcrypt';
@@ -24,18 +24,22 @@ export class AuthService {
     return null;
   }
 
-  async login(user: User): Promise<any> {
-    // const user: User = await this.validateUser(loginDto);
-    // if (!user) {
-    //   throw new UnauthorizedException('Invalid email or password');
-    // }
+  async login(loginDto: LoginDto): Promise<any> {
+    const user: User = await this.validateUser(loginDto);
+    if (!user) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
+    return {
+      token: await this.generateToken(user),
+    };
+  }
+
+  async generateToken(user: User): Promise<string> {
     const payload: any = {
       email: user.email,
-      sub: (user as any)._id,
+      id: (user as any).id,
       roles: user.roles,
     };
-    return {
-      access_token: this.jwtService.sign(payload),
-    };
+    return this.jwtService.sign(payload);
   }
 }

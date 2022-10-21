@@ -7,7 +7,8 @@ import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './user/user.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.module';
-import { APP_PIPE } from '@nestjs/core';
+import { APP_GUARD, APP_PIPE } from '@nestjs/core';
+import { JwtAuthGuard } from './auth/guards/jwt.guard';
 
 @Module({
   imports: [
@@ -32,10 +33,10 @@ import { APP_PIPE } from '@nestjs/core';
         whitelist: true,
       }),
     },
-    // {
-    //   provide: APP_GUARD,
-    //   useClass: JwtAuthGuard,
-    // },
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
   ],
 })
 export class AppModule {}
