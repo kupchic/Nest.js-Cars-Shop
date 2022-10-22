@@ -1,16 +1,18 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { User } from '../user/user.schema';
-import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { UserJwtPayload } from '../user/entities/user-jwt-payload';
+import { MailService } from '../mail/mail.service';
+import { ResetPassDto } from './dto/reset-pass.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
+    private mailService: MailService,
   ) {}
 
   async validateUser(loginDto: LoginDto): Promise<User | null> {
@@ -18,9 +20,9 @@ export class AuthService {
     if (!user) {
       throw new ConflictException('Incorrect email. Please, try again');
     }
-    const isPasswordMatch: boolean = await bcrypt.compare(
+    const isPasswordMatch: boolean = await this.userService.comparePasswords(
       loginDto.password,
-      user.password,
+      user,
     );
     if (isPasswordMatch) {
       return user;
@@ -40,5 +42,21 @@ export class AuthService {
       roles: user.roles,
     };
     return this.jwtService.sign(payload);
+  }
+
+  async resetPassSendLink(email: string): Promise<any> {
+    console.log(email);
+    const user: User = await this.userService.findByEmail(email);
+    if (!user) {
+      throw new ConflictException('Incorrect email. Please, try again');
+    }
+    return this.mailService.sendResetPassLink(
+      user,
+      await this.generateToken(user),
+    );
+  }
+
+  async updateUserPassword(resetPassDto: ResetPassDto): Promise<void> {
+    await this.userService.updateUserPass(resetPassDto);
   }
 }
