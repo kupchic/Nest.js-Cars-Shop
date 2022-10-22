@@ -1,10 +1,4 @@
-import {
-  IsEmail,
-  IsNotEmpty,
-  Matches,
-  MaxLength,
-  MinLength,
-} from 'class-validator';
+import { IsEmail, IsNotEmpty, Matches } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class LoginDto {
@@ -16,17 +10,10 @@ export class LoginDto {
   @ApiProperty({
     maxLength: 20,
     minLength: 8,
-    description:
-      'A password should contain at least one numeric digit, one uppercase char and one lowercase char',
+    description: 'Password must be 8-20 characters long, contain A-z, 0-9',
   })
-  @IsNotEmpty()
-  @MinLength(8, { message: ' The min length of password is 8 ' })
-  @MaxLength(20, {
-    message: " The password can't accept more than 20 characters ",
-  })
-  @Matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,20}$/, {
-    message:
-      'A password should contain at least one numeric digit, one uppercase char and one lowercase char',
+  @Matches(/^(?=.*\d)(?=.*[a-zA-Z])[0-9a-zA-Z]{8,20}$/, {
+    message: 'Password must be 8-20 characters long, contain A-z, 0-9',
   })
   readonly password: string;
 }

@@ -1,12 +1,20 @@
-import { Body, Controller, HttpStatus, Post, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpStatus,
+  Post,
+  Request,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UserService } from '../user/user.service';
 import { Response } from 'express';
 import { from, map } from 'rxjs';
 import { RegisterDto } from './dto/register.dto';
 import { ApiTags } from '@nestjs/swagger';
-import { LoginDto } from './dto/login.dto';
-import { Public } from '../common/decorators/public-decorator';
+import { Public } from 'src/common/decorators/public-decorator';
+import { LocalAuthGuard } from './guards/local.guard';
 
 @ApiTags('Auth Module')
 @Controller('auth')
@@ -24,9 +32,10 @@ export class AuthController {
     );
   }
 
+  @UseGuards(LocalAuthGuard)
   @Public()
   @Post('/login')
-  async login(@Body() body: LoginDto): Promise<any> {
-    return this.authService.login(body);
+  async login(@Request() req): Promise<any> {
+    return this.authService.login(req.user);
   }
 }

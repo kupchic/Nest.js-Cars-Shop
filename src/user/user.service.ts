@@ -1,5 +1,6 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import * as mongoose from 'mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from './user.schema';
 import { UserRoles } from './entities/user-roles.enum';
@@ -14,7 +15,7 @@ export class UserService {
     const user: User = await this.findByEmail(registerDto.email);
     if (!!user) {
       throw new ConflictException(
-        `User with email:${registerDto.email} is existed`,
+        `The actor with the following email address is already registered.`,
       );
     }
     const hashedPass: string = await bcrypt.hash(registerDto.password, 10);
@@ -35,10 +36,17 @@ export class UserService {
   }
 
   async findById(id: string): Promise<User> {
-    return this.userModel.findById(id);
+    if (this.isValidId(id)) {
+      return this.userModel.findById(id);
+    }
+    throw new ConflictException('id is not valid');
   }
 
   async deleteById(id: string): Promise<User> {
     return this.userModel.findByIdAndDelete(id);
+  }
+
+  private isValidId(id: string): boolean {
+    return mongoose.Types.ObjectId.isValid(id);
   }
 }

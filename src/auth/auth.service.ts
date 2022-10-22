@@ -1,9 +1,10 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { User } from '../user/user.schema';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
+import { UserJwtPayload } from '../user/entities/user-jwt-payload';
 
 @Injectable()
 export class AuthService {
@@ -14,28 +15,26 @@ export class AuthService {
 
   async validateUser(loginDto: LoginDto): Promise<User | null> {
     const user: User = await this.userService.findByEmail(loginDto.email);
+    if (!user) {
+      throw new ConflictException('Incorrect email. Please, try again');
+    }
     const isPasswordMatch: boolean = await bcrypt.compare(
       loginDto.password,
       user.password,
     );
-    if (user && isPasswordMatch) {
+    if (isPasswordMatch) {
       return user;
-    }
-    return null;
+    } else throw new ConflictException('Wrong password. Please, try again');
   }
 
-  async login(loginDto: LoginDto): Promise<any> {
-    const user: User = await this.validateUser(loginDto);
-    if (!user) {
-      throw new UnauthorizedException('Invalid email or password');
-    }
+  async login(user: User): Promise<any> {
     return {
       token: await this.generateToken(user),
     };
   }
 
   async generateToken(user: User): Promise<string> {
-    const payload: any = {
+    const payload: UserJwtPayload = {
       email: user.email,
       id: (user as any).id,
       roles: user.roles,

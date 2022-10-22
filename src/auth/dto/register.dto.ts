@@ -23,7 +23,7 @@ export class RegisterDto extends LoginDto {
   @IsString()
   @Matches(/^80(17|29|33|44)[0-9]{7}$/, {
     message:
-      'Wrong phone number. Phone number fit the pattern well: 80 17|29|33|44 1234567',
+      'Wrong phone number. Phone number should fit the pattern well: 80 17|29|33|44 1234567',
   })
   readonly phone: string;
 
