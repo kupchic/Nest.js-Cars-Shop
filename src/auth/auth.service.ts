@@ -13,6 +13,7 @@ import { ResetPassDto } from './dto/reset-pass.dto';
 import * as bcrypt from 'bcrypt';
 import { Tokens } from './types/tokens';
 import { ConfigService } from '@nestjs/config';
+import { ChangePassDto } from './dto/change-pass.dto';
 
 @Injectable()
 export class AuthService {
@@ -48,6 +49,28 @@ export class AuthService {
 
   async logout(userId): Promise<void> {
     await this.userService.updateUserRefreshToken(userId, null);
+  }
+
+  async changePassword(
+    changePassDto: ChangePassDto,
+    user: User,
+  ): Promise<Tokens> {
+    const [oldMatched, newMatched]: boolean[] = await Promise.all([
+      bcrypt.compare(changePassDto.oldPassword, user.password),
+      bcrypt.compare(changePassDto.newPassword, user.password),
+    ]);
+    if (!oldMatched) {
+      throw new ForbiddenException('Wrong old password');
+    }
+    if (newMatched) {
+      throw new ConflictException('New password should not compare to current');
+    }
+    const tokens: Tokens = await this.generateTokens(user);
+    await this.userService.partialUserUpdate(user.id, {
+      password: await bcrypt.hash(changePassDto.newPassword, 10),
+      refresh_token: tokens.refresh_token,
+    });
+    return tokens;
   }
 
   async refreshTokens(userId: string, rt: string): Promise<Tokens> {
@@ -90,8 +113,8 @@ export class AuthService {
     return this.mailService.sendResetPassLink(user, '2'); //TODO
   }
 
-  async updateUserPassword(resetPassDto: ResetPassDto): Promise<Tokens> {
-    const user: User = await this.userService.updateUserPass(resetPassDto);
+  async resetUserPassword(resetPassDto: ResetPassDto): Promise<Tokens> {
+    const user: User = await this.userService.resetUserPass(resetPassDto);
     return this.generateTokens(user);
   }
 }

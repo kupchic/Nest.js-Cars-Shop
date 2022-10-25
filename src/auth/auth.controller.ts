@@ -17,6 +17,7 @@ import { ResetPassDto } from './dto/reset-pass.dto';
 import { Tokens } from './types/tokens';
 import { GetCurrentUser, Public } from 'src/common/decorators';
 import { User } from '../user/user.schema';
+import { ChangePassDto } from './dto/change-pass.dto';
 
 @ApiTags('Auth Module')
 @Controller('auth')
@@ -29,8 +30,8 @@ export class AuthController {
   @Public()
   @HttpCode(HttpStatus.CREATED)
   @Post('/register')
-  register(@Body() registerDTO: RegisterDto): Promise<void> {
-    return this.userService.registerUser(registerDTO);
+  async register(@Body() registerDTO: RegisterDto): Promise<void> {
+    await this.userService.registerUser(registerDTO);
   }
 
   @Public()
@@ -44,6 +45,15 @@ export class AuthController {
   @Post('/logout')
   async logout(@GetCurrentUser('id') userId: string): Promise<void> {
     return this.authService.logout(userId);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Put('/change-password')
+  async changePassword(
+    @Body() dto: ChangePassDto,
+    @GetCurrentUser() user: User,
+  ): Promise<Tokens> {
+    return this.authService.changePassword(dto, user);
   }
 
   @Public()
@@ -65,7 +75,7 @@ export class AuthController {
 
   @Public()
   @Put('/reset-password')
-  async updatePass(@Body() resetPassDTO: ResetPassDto): Promise<Tokens> {
-    return this.authService.updateUserPassword(resetPassDTO);
+  async resetPass(@Body() resetPassDTO: ResetPassDto): Promise<Tokens> {
+    return this.authService.resetUserPassword(resetPassDTO);
   }
 }
