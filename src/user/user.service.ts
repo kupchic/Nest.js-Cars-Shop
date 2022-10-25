@@ -59,12 +59,6 @@ export class UserService {
     });
   }
 
-  async updateUserRefreshToken(userID: string, rt: string): Promise<User> {
-    return this.partialUserUpdate(userID, {
-      refresh_token: await this._hash(rt),
-    });
-  }
-
   async comparePasswords(pass: string, user: User): Promise<boolean> {
     return bcrypt.compare(pass, user.password);
   }
@@ -73,7 +67,9 @@ export class UserService {
     userId: string,
     state: Partial<Omit<User, 'email' | 'id'>>,
   ): Promise<User> {
-    return this.userModel.findByIdAndUpdate(userId, state);
+    if (state) {
+      return this.userModel.findByIdAndUpdate(userId, state);
+    }
   }
 
   private _isValidId(id: string): boolean {

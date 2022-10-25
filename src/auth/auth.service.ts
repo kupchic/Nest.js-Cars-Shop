@@ -40,15 +40,16 @@ export class AuthService {
 
   async login(user: User): Promise<Tokens> {
     const tokens: Tokens = await this.generateTokens(user);
-    await this.userService.updateUserRefreshToken(
-      user.id,
-      tokens.refresh_token,
-    );
+    await this.userService.partialUserUpdate(user.id, {
+      refresh_token: tokens.refresh_token,
+    });
     return tokens;
   }
 
   async logout(userId): Promise<void> {
-    await this.userService.updateUserRefreshToken(userId, null);
+    await this.userService.partialUserUpdate(userId, {
+      refresh_token: null,
+    });
   }
 
   async changePassword(
@@ -75,15 +76,14 @@ export class AuthService {
 
   async refreshTokens(userId: string, rt: string): Promise<Tokens> {
     const user: User = await this.userService.findById(userId);
-    if (
-      !user ||
-      !user.refresh_token ||
-      !(await bcrypt.compare(rt, user.refresh_token))
-    ) {
+    if (!user || !user.refresh_token || rt !== user.refresh_token) {
       throw new ForbiddenException('Access Denied');
     }
+    console.log(await bcrypt.compare(rt, user.refresh_token));
     const tokens: Tokens = await this.generateTokens(user);
-    await this.userService.updateUserRefreshToken(userId, tokens.refresh_token);
+    await this.userService.partialUserUpdate(userId, {
+      refresh_token: tokens.refresh_token,
+    });
     return tokens;
   }
 
