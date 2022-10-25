@@ -6,16 +6,17 @@ import {
   Param,
   Post,
   Put,
-  Request,
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UserService } from '../user/user.service';
 import { RegisterDto } from './dto/register.dto';
 import { ApiTags } from '@nestjs/swagger';
-import { Public } from 'src/common/decorators/public-decorator';
-import { LocalAuthGuard } from './guards/local.guard';
+import { LocalAuthGuard, RefreshTokenGuard } from './guards';
 import { ResetPassDto } from './dto/reset-pass.dto';
+import { Tokens } from './types/tokens';
+import { GetCurrentUser, Public } from 'src/common/decorators';
+import { User } from '../user/user.schema';
 
 @ApiTags('Auth Module')
 @Controller('auth')
@@ -26,17 +27,34 @@ export class AuthController {
   ) {}
 
   @Public()
-  @Post('/register')
   @HttpCode(HttpStatus.CREATED)
-  register(@Body() registerDTO: RegisterDto): any {
+  @Post('/register')
+  register(@Body() registerDTO: RegisterDto): Promise<void> {
     return this.userService.registerUser(registerDTO);
   }
 
-  @UseGuards(LocalAuthGuard)
   @Public()
+  @UseGuards(LocalAuthGuard)
   @Post('/login')
-  async login(@Request() req): Promise<any> {
-    return this.authService.login(req.user);
+  async login(@GetCurrentUser() user: User): Promise<Tokens> {
+    return this.authService.login(user);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('/logout')
+  async logout(@GetCurrentUser('id') userId: string): Promise<void> {
+    return this.authService.logout(userId);
+  }
+
+  @Public()
+  @UseGuards(RefreshTokenGuard)
+  @HttpCode(HttpStatus.OK)
+  @Post('/refresh')
+  async refreshTokens(
+    @GetCurrentUser('id') userId: string,
+    @GetCurrentUser('refresh_token') rt: string,
+  ): Promise<Tokens> {
+    return this.authService.refreshTokens(userId, rt);
   }
 
   @Public()
@@ -46,9 +64,8 @@ export class AuthController {
   }
 
   @Public()
-  @HttpCode(HttpStatus.NO_CONTENT)
   @Put('/reset-password')
-  async updatePass(@Body() resetPassDTO: ResetPassDto): Promise<any> {
+  async updatePass(@Body() resetPassDTO: ResetPassDto): Promise<Tokens> {
     return this.authService.updateUserPassword(resetPassDTO);
   }
 }

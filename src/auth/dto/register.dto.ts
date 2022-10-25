@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, Length, Matches } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsPhoneNumber,
+  IsString,
+  Length,
+  Matches,
+} from 'class-validator';
 import { ResetPassDto } from './reset-pass.dto';
 
 export class RegisterDto extends ResetPassDto {
@@ -17,10 +23,11 @@ export class RegisterDto extends ResetPassDto {
   @Length(3, 25)
   readonly lastName: string;
 
-  @ApiProperty({ pattern: '80(17|29|33|44)[0-9]{7}' })
+  @ApiProperty({ pattern: '80(17|25|29|33|44)[0-9]{7}' })
   @IsNotEmpty()
   @IsString()
-  @Matches(/^80(17|29|33|44)[0-9]{7}$/, {
+  @IsPhoneNumber('BY')
+  @Matches(/^80(17|25|29|33|44)[0-9]{7}$/, {
     message:
       'Wrong phone number. Phone number should fit the pattern well: 80 17|29|33|44 1234567',
   })

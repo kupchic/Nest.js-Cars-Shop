@@ -1,4 +1,8 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { User } from '../user/user.schema';
 import { LoginDto } from './dto/login.dto';
@@ -6,13 +10,17 @@ import { JwtService } from '@nestjs/jwt';
 import { UserJwtPayload } from '../user/entities/user-jwt-payload';
 import { MailService } from '../mail/mail.service';
 import { ResetPassDto } from './dto/reset-pass.dto';
+import * as bcrypt from 'bcrypt';
+import { Tokens } from './types/tokens';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
-    private mailService: MailService,
+    private readonly mailService: MailService,
+    private readonly configService: ConfigService,
   ) {}
 
   async validateUser(loginDto: LoginDto): Promise<User | null> {
@@ -29,34 +37,61 @@ export class AuthService {
     } else throw new ConflictException('Wrong password. Please, try again');
   }
 
-  async login(user: User): Promise<any> {
-    return {
-      token: await this.generateToken(user),
-    };
+  async login(user: User): Promise<Tokens> {
+    const tokens: Tokens = await this.generateTokens(user);
+    await this.userService.updateUserRefreshToken(
+      user.id,
+      tokens.refresh_token,
+    );
+    return tokens;
   }
 
-  async generateToken(user: User): Promise<string> {
+  async logout(userId): Promise<void> {
+    await this.userService.updateUserRefreshToken(userId, null);
+  }
+
+  async refreshTokens(userId: string, rt: string): Promise<Tokens> {
+    const user: User = await this.userService.findById(userId);
+    if (
+      !user ||
+      !user.refresh_token ||
+      !(await bcrypt.compare(rt, user.refresh_token))
+    ) {
+      throw new ForbiddenException('Access Denied');
+    }
+    const tokens: Tokens = await this.generateTokens(user);
+    await this.userService.updateUserRefreshToken(userId, tokens.refresh_token);
+    return tokens;
+  }
+
+  async generateTokens(user: User): Promise<Tokens> {
     const payload: UserJwtPayload = {
       email: user.email,
-      id: (user as any).id,
+      id: user.id,
       roles: user.roles,
     };
-    return this.jwtService.sign(payload);
+    return {
+      access_token: this.jwtService.sign(payload, {
+        secret: this.configService.get('JWT_SECRET'),
+        expiresIn: this.configService.get('JWT_EXPIRE'),
+      }),
+      refresh_token: this.jwtService.sign(payload, {
+        secret: this.configService.get('REFRESH_TOKEN_SECRET'),
+        expiresIn: this.configService.get('REFRESH_TOKEN_EXPIRATION'),
+      }),
+    };
   }
 
   async resetPassSendLink(email: string): Promise<any> {
-    console.log(email);
     const user: User = await this.userService.findByEmail(email);
     if (!user) {
       throw new ConflictException('Incorrect email. Please, try again');
     }
-    return this.mailService.sendResetPassLink(
-      user,
-      await this.generateToken(user),
-    );
+    return this.mailService.sendResetPassLink(user, '2'); //TODO
   }
 
-  async updateUserPassword(resetPassDto: ResetPassDto): Promise<void> {
-    await this.userService.updateUserPass(resetPassDto);
+  async updateUserPassword(resetPassDto: ResetPassDto): Promise<Tokens> {
+    const user: User = await this.userService.updateUserPass(resetPassDto);
+    return this.generateTokens(user);
   }
 }
