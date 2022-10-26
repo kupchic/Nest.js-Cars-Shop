@@ -2,6 +2,7 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { User } from '../user/user.schema';
@@ -14,6 +15,7 @@ import * as bcrypt from 'bcrypt';
 import { Tokens } from './types/tokens';
 import { ConfigService } from '@nestjs/config';
 import { ChangePassDto } from './dto/change-pass.dto';
+import 'dotenv/config';
 
 @Injectable()
 export class AuthService {
@@ -79,7 +81,6 @@ export class AuthService {
     if (!user || !user.refresh_token || rt !== user.refresh_token) {
       throw new ForbiddenException('Access Denied');
     }
-    console.log(await bcrypt.compare(rt, user.refresh_token));
     const tokens: Tokens = await this.generateTokens(user);
     await this.userService.partialUserUpdate(userId, {
       refresh_token: tokens.refresh_token,
@@ -105,16 +106,52 @@ export class AuthService {
     };
   }
 
-  async resetPassSendLink(email: string): Promise<any> {
+  async resetPassSendLink(email: string): Promise<void> {
     const user: User = await this.userService.findByEmail(email);
     if (!user) {
       throw new ConflictException('Incorrect email. Please, try again');
     }
-    return this.mailService.sendResetPassLink(user, '2'); //TODO
+    const token: string = this.jwtService.sign(
+      {
+        email: user.email,
+        id: user.id,
+      },
+      {
+        expiresIn: '15m',
+        secret: this._generateResetPassSecret(user),
+      },
+    );
+    const link: string = `http://localhost:5000/auth/reset-password/${user.id}/${token}`;
+    return this.mailService.sendResetPassLink(user, link);
   }
 
-  async resetUserPassword(resetPassDto: ResetPassDto): Promise<Tokens> {
-    const user: User = await this.userService.resetUserPass(resetPassDto);
-    return this.generateTokens(user);
+  async resetUserPassword(
+    resetPassDto: ResetPassDto,
+    userId,
+    token: string,
+  ): Promise<void> {
+    const user: User = await this.userService.findById(userId);
+
+    if (!user) {
+      throw new NotFoundException('User is not found');
+    }
+    try {
+      this.jwtService.verify(token, {
+        secret: this._generateResetPassSecret(user),
+        ignoreExpiration: false,
+      });
+    } catch (e) {
+      throw new ConflictException('The password reset link is no longer valid');
+    }
+    if (await this.userService.comparePasswords(resetPassDto.password, user)) {
+      throw new ConflictException('New password should not match the current');
+    }
+    await this.userService.partialUserUpdate(user.id, {
+      password: await bcrypt.hash(resetPassDto.password, 10),
+    });
+  }
+
+  private _generateResetPassSecret(user: User): string {
+    return process.env.JWT_SECRET + user.id + user.password;
   }
 }

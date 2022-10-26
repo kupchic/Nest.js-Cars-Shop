@@ -9,7 +9,6 @@ import { Model } from 'mongoose';
 import { User, UserDocument } from './user.schema';
 import * as bcrypt from 'bcrypt';
 import { RegisterDto } from '../auth/dto/register.dto';
-import { ResetPassDto } from '../auth/dto/reset-pass.dto';
 
 @Injectable()
 export class UserService {
@@ -45,18 +44,6 @@ export class UserService {
 
   async deleteById(id: string): Promise<User> {
     return this.userModel.findByIdAndDelete(id);
-  }
-
-  async resetUserPass(resetPassDto: ResetPassDto): Promise<User> {
-    const user: User = await this.findByEmail(resetPassDto.email);
-    if (!user) {
-      throw new NotFoundException('There is no user with this email.');
-    } else if (await this.comparePasswords(resetPassDto.password, user)) {
-      throw new ConflictException('New password should not match the current');
-    }
-    return this.partialUserUpdate(user.id, {
-      password: await this._hash(resetPassDto.password),
-    });
   }
 
   async comparePasswords(pass: string, user: User): Promise<boolean> {

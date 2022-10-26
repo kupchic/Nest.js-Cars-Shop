@@ -11,7 +11,7 @@ import {
 import { AuthService } from './auth.service';
 import { UserService } from '../user/user.service';
 import { RegisterDto } from './dto/register.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LocalAuthGuard, RefreshTokenGuard } from './guards';
 import { ResetPassDto } from './dto/reset-pass.dto';
 import { Tokens } from './types/tokens';
@@ -34,6 +34,9 @@ export class AuthController {
     await this.userService.registerUser(registerDTO);
   }
 
+  @ApiResponse({
+    type: Tokens,
+  })
   @Public()
   @UseGuards(LocalAuthGuard)
   @Post('/login')
@@ -56,6 +59,9 @@ export class AuthController {
     return this.authService.changePassword(dto, user);
   }
 
+  @ApiResponse({
+    type: Tokens,
+  })
   @Public()
   @UseGuards(RefreshTokenGuard)
   @HttpCode(HttpStatus.OK)
@@ -68,14 +74,17 @@ export class AuthController {
   }
 
   @Public()
-  @Post('/reset-password/:email')
-  async sendLink(@Param('email') email: string): Promise<any> {
+  @Post('/forgot-password/:email')
+  async sendLink(@Param('email') email: string): Promise<void> {
     return this.authService.resetPassSendLink(email);
   }
 
   @Public()
-  @Put('/reset-password')
-  async resetPass(@Body() resetPassDTO: ResetPassDto): Promise<Tokens> {
-    return this.authService.resetUserPassword(resetPassDTO);
+  @Put('/reset-password/:id/:token')
+  async forgotPass(
+    @Body() resetPassDTO: ResetPassDto,
+    @Param() { id, token }: { id: string; token: string },
+  ): Promise<void> {
+    return this.authService.resetUserPassword(resetPassDTO, id, token);
   }
 }

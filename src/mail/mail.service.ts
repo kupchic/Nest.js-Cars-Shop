@@ -6,8 +6,7 @@ import { User } from 'src/user/user.schema';
 export class MailService {
   constructor(private mailerService: MailerService) {}
 
-  async sendResetPassLink(user: User, token: string): Promise<any> {
-    const url: string = `http://localhost:5000/auth/reset-password?token=${token}`;
+  async sendResetPassLink(user: User, url: string): Promise<any> {
     return this.mailerService.sendMail({
       to: user.email,
       subject: 'Reset Password',
