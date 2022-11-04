@@ -4,7 +4,6 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { UserService } from 'src/user/user.service';
 import { User } from '../user/user.schema';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
@@ -16,6 +15,7 @@ import { Tokens } from './types/tokens';
 import { ConfigService } from '@nestjs/config';
 import { ChangePassDto } from './dto/change-pass.dto';
 import 'dotenv/config';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class AuthService {
@@ -41,17 +41,25 @@ export class AuthService {
   }
 
   async login(user: User): Promise<Tokens> {
-    const tokens: Tokens = await this.generateTokens(user);
-    await this.userService.partialUserUpdate(user.id, {
-      refresh_token: tokens.refresh_token,
-    });
-    return tokens;
+    try {
+      const tokens: Tokens = await this._generateTokens(user);
+      await this.userService.partialUserUpdate(user.id, {
+        refresh_token: tokens.refresh_token,
+      });
+      return tokens;
+    } catch (e) {
+      return e;
+    }
   }
 
   async logout(userId): Promise<void> {
-    await this.userService.partialUserUpdate(userId, {
-      refresh_token: null,
-    });
+    try {
+      await this.userService.partialUserUpdate(userId, {
+        refresh_token: null,
+      });
+    } catch (e) {
+      return e;
+    }
   }
 
   async changePassword(
@@ -68,7 +76,7 @@ export class AuthService {
     if (newMatched) {
       throw new ConflictException('New password should not compare to current');
     }
-    const tokens: Tokens = await this.generateTokens(user);
+    const tokens: Tokens = await this._generateTokens(user);
     await this.userService.partialUserUpdate(user.id, {
       password: await bcrypt.hash(changePassDto.newPassword, 10),
       refresh_token: tokens.refresh_token,
@@ -81,29 +89,11 @@ export class AuthService {
     if (!user || !user.refresh_token || rt !== user.refresh_token) {
       throw new ForbiddenException('Access Denied');
     }
-    const tokens: Tokens = await this.generateTokens(user);
+    const tokens: Tokens = await this._generateTokens(user);
     await this.userService.partialUserUpdate(userId, {
       refresh_token: tokens.refresh_token,
     });
     return tokens;
-  }
-
-  async generateTokens(user: User): Promise<Tokens> {
-    const payload: UserJwtPayload = {
-      email: user.email,
-      id: user.id,
-      roles: user.roles,
-    };
-    return {
-      access_token: this.jwtService.sign(payload, {
-        secret: this.configService.get('JWT_SECRET'),
-        expiresIn: this.configService.get('JWT_EXPIRE'),
-      }),
-      refresh_token: this.jwtService.sign(payload, {
-        secret: this.configService.get('REFRESH_TOKEN_SECRET'),
-        expiresIn: this.configService.get('REFRESH_TOKEN_EXPIRATION'),
-      }),
-    };
   }
 
   async resetPassSendLink(email: string): Promise<void> {
@@ -149,6 +139,28 @@ export class AuthService {
     await this.userService.partialUserUpdate(user.id, {
       password: await bcrypt.hash(resetPassDto.password, 10),
     });
+  }
+
+  private async _generateTokens(user: User): Promise<Tokens> {
+    try {
+      const payload: UserJwtPayload = {
+        email: user.email,
+        id: user.id,
+        roles: user.roles,
+      };
+      return {
+        access_token: this.jwtService.sign(payload, {
+          secret: this.configService.get('JWT_SECRET'),
+          expiresIn: this.configService.get('JWT_EXPIRE'),
+        }),
+        refresh_token: this.jwtService.sign(payload, {
+          secret: this.configService.get('REFRESH_TOKEN_SECRET'),
+          expiresIn: this.configService.get('REFRESH_TOKEN_EXPIRATION'),
+        }),
+      };
+    } catch (e) {
+      return e;
+    }
   }
 
   private _generateResetPassSecret(user: User): string {
