@@ -2,26 +2,35 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
 import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
 import { MailService } from '../mail/mail.service';
 import { User } from '../user/user.schema';
 import { UserRoles } from '../user/entities/user-roles.enum';
 import { LoginDto } from './dto/login.dto';
-import { ConflictException } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { UserJwtPayload } from '../user/entities/user-jwt-payload';
 import { Tokens } from './types/tokens';
 import { JwtSignOptions } from '@nestjs/jwt/dist/interfaces';
+import { ChangePassDto } from './dto/change-pass.dto';
+import * as bcrypt from 'bcrypt';
+import { ResetPassDto } from './dto/reset-pass.dto';
+import { HttpException } from '@nestjs/common/exceptions/http.exception';
+import 'dotenv/config';
+import { RegisterDto } from './dto/register.dto';
 import SpyInstance = jest.SpyInstance;
 
-fdescribe('AuthService', () => {
+describe('AuthService', () => {
   let service: AuthService;
   let usersService: UserService;
   let mailService: MailService;
-  let configService: ConfigService;
   let jwtService: JwtService;
+  const userPass: string = '123456';
   const mockUser: User = {
     id: 'mock',
-    password: '123456',
+    password: userPass,
     email: 'mock@gmail.com',
     roles: [UserRoles.CUSTOMER],
     refresh_token: 'some',
@@ -32,6 +41,7 @@ fdescribe('AuthService', () => {
   };
 
   beforeEach(async () => {
+    mockUser.password = await bcrypt.hash('123456', 10);
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
@@ -43,12 +53,11 @@ fdescribe('AuthService', () => {
           },
         },
         {
-          provide: ConfigService,
+          provide: MailService,
           useValue: {
-            get: jest.fn(),
+            sendResetPassLink: jest.fn(),
           },
         },
-        { provide: MailService, useValue: {} },
         {
           provide: UserService,
           useValue: {
@@ -56,6 +65,7 @@ fdescribe('AuthService', () => {
             findById: jest.fn(),
             comparePasswords: jest.fn(),
             partialUserUpdate: jest.fn(),
+            registerUser: jest.fn(),
           },
         },
       ],
@@ -65,7 +75,6 @@ fdescribe('AuthService', () => {
     usersService = module.get<UserService>(UserService);
     mailService = module.get<MailService>(MailService);
     jwtService = module.get<JwtService>(JwtService);
-    configService = module.get<ConfigService>(ConfigService);
   });
 
   it('should be defined', () => {
@@ -126,38 +135,45 @@ fdescribe('AuthService', () => {
         id: mockUser.id,
         roles: mockUser.roles,
       };
-      const configValue: string = 'test';
-      const expectedOptions: JwtSignOptions = {
-        secret: configValue,
-        expiresIn: configValue,
+      const accessTokenExpectedOptions: JwtSignOptions = {
+        secret: process.env.JWT_SECRET,
+        expiresIn: process.env.JWT_EXPIRE,
       };
-      const expectedConfigGets: string[] = [
-        'JWT_SECRET',
-        'JWT_EXPIRE',
-        'REFRESH_TOKEN_SECRET',
-        'REFRESH_TOKEN_EXPIRATION',
-      ];
-      const jwtSignSpy: SpyInstance = jest.spyOn(jwtService, 'sign');
-      const configSpy: SpyInstance = jest
-        .spyOn(configService, 'get')
-        .mockReturnValue(configValue);
+      const refreshTokenExpectedOptions: JwtSignOptions = {
+        secret: process.env.REFRESH_TOKEN_SECRET,
+        expiresIn: process.env.REFRESH_TOKEN_EXPIRATION,
+      };
+      const expectedTokens: Tokens = {
+        refresh_token: 'test',
+        access_token: 'test',
+      };
+      const jwtSignSpy: SpyInstance = jest
+        .spyOn(jwtService, 'sign')
+        .mockReturnValue('test');
       //when
       const tokens: Tokens = await service[methodName](mockUser);
       //then
-      expect(tokens).toEqual({});
+      expect(tokens).toEqual(expectedTokens);
       expect(jwtSignSpy).toHaveBeenCalledTimes(2);
       expect(jwtSignSpy.mock.calls[0]).toEqual([
         expectedPayload,
-        expectedOptions,
+        accessTokenExpectedOptions,
       ]);
       expect(jwtSignSpy.mock.calls[1]).toEqual([
         expectedPayload,
-        expectedOptions,
+        refreshTokenExpectedOptions,
       ]);
-      expect(configSpy).toHaveBeenCalledTimes(expectedConfigGets.length);
-      expect(configSpy.mock.calls).toEqual(
-        expectedConfigGets.map((v: string) => [v]),
-      );
+    });
+    it('should catch error', async () => {
+      // given
+      const expectedError: Error = new Error('error');
+      jest.spyOn(jwtService, 'sign').mockImplementation(() => {
+        throw expectedError;
+      });
+      //when
+      const tokens: Tokens = await service[methodName](mockUser);
+      //then
+      expect(tokens).toEqual(expectedError);
     });
   });
 
@@ -215,6 +231,249 @@ fdescribe('AuthService', () => {
       const result: any = await service.logout(mockUser.id);
       // then
       expect(result).toEqual(new ConflictException());
+    });
+  });
+  describe('changePassword', () => {
+    it('should throw error when old password is wrong', async () => {
+      // given
+      const changePassDto: ChangePassDto = {
+        oldPassword: userPass + 1,
+        newPassword: '222',
+        repeatNewPassword: '222',
+      };
+      const expectedError: ForbiddenException = new ForbiddenException(
+        'Wrong old password',
+      );
+      // when
+      const res: Tokens = await service.changePassword(changePassDto, mockUser);
+      // then
+      expect(res).toEqual(expectedError);
+    });
+    it('should throw error when new password compare to old password', async () => {
+      // given
+      const changePassDto: ChangePassDto = {
+        oldPassword: userPass,
+        newPassword: userPass,
+        repeatNewPassword: userPass,
+      };
+      const expectedError: ForbiddenException = new ConflictException(
+        'New password should not match the current',
+      );
+      // when
+      const res: Tokens = await service.changePassword(changePassDto, mockUser);
+      // then
+      expect(res).toEqual(expectedError);
+    });
+    it('should update user password and refresh token', async () => {
+      // given
+      const changePassDto: ChangePassDto = {
+        oldPassword: userPass,
+        newPassword: userPass + 1,
+        repeatNewPassword: userPass + 1,
+      };
+      jest.spyOn(jwtService, 'sign').mockReturnValue('test');
+      const expectedTokens: Tokens = {
+        refresh_token: 'test',
+        access_token: 'test',
+      };
+
+      // when
+      const res: Tokens = await service.changePassword(changePassDto, mockUser);
+      // then
+      expect(res).toEqual(expectedTokens);
+      expect(usersService.partialUserUpdate).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('resetUserPassword', () => {
+    const resetPassDto: ResetPassDto = {
+      password: '12345',
+      confirmPassword: '12345',
+    };
+    it('should throw NotFoundException if user was not found by id', async () => {
+      // given
+      const expectedError: NotFoundException = new NotFoundException(
+        'User is not found',
+      );
+      jest.spyOn(usersService, 'findById').mockResolvedValueOnce(null);
+      // when
+      const result: void = await service.resetUserPassword(
+        resetPassDto,
+        mockUser.id,
+        '1',
+      );
+      // then
+      expect(result).toEqual(expectedError);
+    });
+    it('should throw ConflictException if link is expired', async () => {
+      // given
+      const expectedError: HttpException = new ConflictException(
+        'The password reset link is no longer valid',
+      );
+      jest.spyOn(usersService, 'findById').mockResolvedValueOnce(mockUser);
+      jest.spyOn(jwtService, 'verify').mockImplementation(() => {
+        throw new Error();
+      });
+
+      // when
+      const result: void = await service.resetUserPassword(
+        resetPassDto,
+        mockUser.id,
+        '1',
+      );
+      // then
+      expect(result).toEqual(expectedError);
+    });
+    it('should throw ConflictException if new password match the current', async () => {
+      // given
+      const expectedError: HttpException = new ConflictException(
+        'New password should not match the current',
+      );
+      jest.spyOn(usersService, 'findById').mockResolvedValueOnce(mockUser);
+      jest.spyOn(usersService, 'comparePasswords').mockResolvedValueOnce(true);
+      // when
+      const result: void = await service.resetUserPassword(
+        { ...resetPassDto, password: userPass },
+        mockUser.id,
+        '1',
+      );
+      // then
+      expect(result).toEqual(expectedError);
+    });
+
+    it('should update userPass if new password does not match the current', async () => {
+      // given
+      const expectedUpdate: any = { password: 'password' };
+      jest.spyOn(usersService, 'findById').mockResolvedValueOnce(mockUser);
+      jest.spyOn(usersService, 'comparePasswords').mockResolvedValueOnce(false);
+      jest
+        .spyOn(bcrypt, 'hash')
+        .mockResolvedValueOnce(expectedUpdate.password as never);
+      // when
+      const result: void = await service.resetUserPassword(
+        resetPassDto,
+        mockUser.id,
+        '1',
+      );
+      // then
+      expect(result).toBeUndefined();
+      expect(usersService.partialUserUpdate).nthCalledWith(
+        1,
+        mockUser.id,
+        expectedUpdate,
+      );
+      expect(bcrypt.hash).nthCalledWith(1, resetPassDto.password, 10);
+    });
+  });
+
+  describe('resetPassSendLink', () => {
+    it('should return ConflictException if user was not found with email', async () => {
+      // given
+      const expectedError: HttpException = new ConflictException(
+        'Incorrect email. Please, try again',
+      );
+      jest.spyOn(usersService, 'findByEmail').mockResolvedValueOnce(null);
+      // when
+      const result: void = await service.resetPassSendLink(mockUser.email);
+      // then
+      expect(result).toEqual(expectedError);
+    });
+    it('should call sendResetPassLink method of mailService with expected link and user data', async () => {
+      // given
+      const mockToken: string = 'token';
+      const expectedLink: string = `http://localhost:5000/auth/reset-password/${mockUser.id}/${mockToken}`;
+      const jwtSignSpy: SpyInstance = jest
+        .spyOn(jwtService, 'sign')
+        .mockReturnValue(mockToken);
+      const expectedSignArgs: any[] = [
+        {
+          email: mockUser.email,
+          id: mockUser.id,
+        },
+        {
+          expiresIn: '15m',
+          secret: `${process.env.JWT_SECRET}${mockUser.id}${mockUser.password}`,
+        },
+      ];
+
+      jest.spyOn(usersService, 'findByEmail').mockResolvedValueOnce(mockUser);
+      // when
+      const result: void = await service.resetPassSendLink(mockUser.email);
+      // then
+      expect(result).toBeUndefined();
+      expect(jwtSignSpy).toHaveBeenNthCalledWith(1, ...expectedSignArgs);
+      expect(mailService.sendResetPassLink).toHaveBeenNthCalledWith(
+        1,
+        mockUser,
+        expectedLink,
+      );
+    });
+  });
+  describe('refreshTokens', () => {
+    describe('should return ForbiddenException if', () => {
+      const error: ForbiddenException = new ForbiddenException('Access Denied');
+      it('user was not found', async () => {
+        // given
+        jest.spyOn(usersService, 'findById').mockResolvedValueOnce(null);
+        // when
+        const result: Tokens = await service.refreshTokens(mockUser.id, 'test');
+        // then
+        expect(result).toEqual(error);
+      });
+      it('user refresh token is null', async () => {
+        // given
+        jest
+          .spyOn(usersService, 'findById')
+          .mockResolvedValueOnce({ ...mockUser, refresh_token: null });
+        // when
+        const result: Tokens = await service.refreshTokens(mockUser.id, 'test');
+        // then
+        expect(result).toEqual(error);
+      });
+      it('user refresh token is not equal to request refresh token', async () => {
+        // given
+        jest
+          .spyOn(usersService, 'findById')
+          .mockResolvedValueOnce({ ...mockUser, refresh_token: 'test3' });
+        // when
+        const result: Tokens = await service.refreshTokens(mockUser.id, 'test');
+        // then
+        expect(result).toEqual(error);
+      });
+    });
+    it('should returns tokens if user refresh token is equal to request refresh token and update user refresh_token', async () => {
+      // given
+      const expectedTokens: Tokens = {
+        refresh_token: 'token',
+        access_token: 'token',
+      };
+      jest
+        .spyOn(usersService, 'findById')
+        .mockResolvedValueOnce({ ...mockUser, refresh_token: 'test' });
+
+      jest
+        .spyOn(jwtService, 'sign')
+        .mockReturnValue(expectedTokens.access_token);
+      // when
+      const result: Tokens = await service.refreshTokens(mockUser.id, 'test');
+      // then
+      expect(result).toEqual(expectedTokens);
+      expect(usersService.partialUserUpdate).nthCalledWith(1, mockUser.id, {
+        refresh_token: expectedTokens.refresh_token,
+      });
+    });
+  });
+  describe('registerUser', () => {
+    it('should call register method from userService', async () => {
+      // given
+      const registerDto: RegisterDto = {
+        ...mockUser,
+        confirmPassword: '',
+      };
+      // when
+      await service.registerUser(registerDto);
+      // then
+      expect(usersService.registerUser).toHaveBeenNthCalledWith(1, registerDto);
     });
   });
 });

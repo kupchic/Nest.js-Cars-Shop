@@ -9,29 +9,25 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { UserService } from '../user/user.service';
 import { RegisterDto } from './dto/register.dto';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LocalAuthGuard, RefreshTokenGuard } from './guards';
 import { ResetPassDto } from './dto/reset-pass.dto';
 import { Tokens } from './types/tokens';
-import { GetCurrentUser, Public } from 'src/common/decorators';
 import { User } from '../user/user.schema';
 import { ChangePassDto } from './dto/change-pass.dto';
+import { GetCurrentUser, Public } from '../common/decorators';
 
 @ApiTags('Auth Module')
 @Controller('auth')
 export class AuthController {
-  constructor(
-    private readonly authService: AuthService,
-    private userService: UserService,
-  ) {}
+  constructor(private readonly authService: AuthService) {}
 
   @Public()
   @HttpCode(HttpStatus.CREATED)
   @Post('/register')
   async register(@Body() registerDTO: RegisterDto): Promise<void> {
-    await this.userService.registerUser(registerDTO);
+    return this.authService.registerUser(registerDTO);
   }
 
   @ApiResponse({
@@ -50,6 +46,9 @@ export class AuthController {
     return this.authService.logout(userId);
   }
 
+  @ApiResponse({
+    type: Tokens,
+  })
   @HttpCode(HttpStatus.OK)
   @Put('/change-password')
   async changePassword(
