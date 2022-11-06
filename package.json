@@ -89,10 +89,13 @@
     ],
     "coveragePathIgnorePatterns": [
       ".dto.ts",
+      ".schema.ts",
+      ".validator.ts",
       "main.ts",
       ".module.ts",
       "format-winston.ts",
-      "config"
+      "config",
+      "common/decorators/*.ts"
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"

@@ -1,10 +1,5 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import * as mongoose from 'mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from './user.schema';
 import * as bcrypt from 'bcrypt';
@@ -15,20 +10,28 @@ export class UserService {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
   async registerUser(registerDto: RegisterDto): Promise<User> {
-    const user: User = await this.findByEmail(registerDto.email);
-    if (!!user) {
-      throw new ConflictException(
-        `The actor with the following email address is already registered.`,
-      );
+    try {
+      const user: User = await this.findByEmail(registerDto.email);
+      if (!!user) {
+        throw new ConflictException(
+          `The actor with the following email address is already registered.`,
+        );
+      }
+      return this.userModel.create({
+        ...registerDto,
+        password: await this._hash(registerDto.password),
+      });
+    } catch (e) {
+      return e;
     }
-    return this.userModel.create({
-      ...registerDto,
-      password: await this._hash(registerDto.password),
-    });
   }
 
   async getAllUsers(): Promise<User[]> {
-    return this.userModel.find({});
+    try {
+      return this.userModel.find({});
+    } catch (e) {
+      return e;
+    }
   }
 
   async findByEmail(email: string): Promise<User> {
@@ -36,31 +39,36 @@ export class UserService {
   }
 
   async findById(id: string): Promise<User> {
-    if (this._isValidId(id)) {
+    try {
       return this.userModel.findById(id);
+    } catch (e) {
+      return e;
     }
-    throw new NotFoundException('id is not valid');
   }
 
   async deleteById(id: string): Promise<User> {
-    return this.userModel.findByIdAndDelete(id);
-  }
-
-  async comparePasswords(pass: string, user: User): Promise<boolean> {
-    return bcrypt.compare(pass, user.password);
+    try {
+      return this.userModel.findByIdAndDelete(id);
+    } catch (e) {
+      return e;
+    }
   }
 
   async partialUserUpdate(
     userId: string,
     state: Partial<Omit<User, 'email' | 'id'>>,
   ): Promise<User> {
-    if (state) {
-      return this.userModel.findByIdAndUpdate(userId, state);
+    try {
+      if (state) {
+        return this.userModel.findByIdAndUpdate(userId, state);
+      } else throw new ConflictException('Provide data to update');
+    } catch (e) {
+      return e;
     }
   }
 
-  private _isValidId(id: string): boolean {
-    return mongoose.Types.ObjectId.isValid(id);
+  async comparePasswords(pass: string, user: User): Promise<boolean> {
+    return bcrypt.compare(pass, user.password);
   }
 
   private _hash(str: string): Promise<string> {
