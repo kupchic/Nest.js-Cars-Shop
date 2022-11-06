@@ -8,6 +8,7 @@ import * as bcrypt from 'bcrypt';
 import { Tokens } from './types/tokens';
 import { ChangePassDto } from './dto/change-pass.dto';
 import { ResetPassDto } from './dto/reset-pass.dto';
+import { createMock } from '@golevelup/ts-jest';
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -31,15 +32,7 @@ describe('AuthController', () => {
       providers: [
         {
           provide: AuthService,
-          useValue: {
-            registerUser: jest.fn(),
-            login: jest.fn(),
-            logout: jest.fn(),
-            changePassword: jest.fn(),
-            refreshTokens: jest.fn(),
-            resetPassSendLink: jest.fn(),
-            resetUserPassword: jest.fn(),
-          },
+          useValue: createMock<AuthService>(),
         },
       ],
     }).compile();
@@ -58,7 +51,7 @@ describe('AuthController', () => {
         ...mockUser,
         confirmPassword: mockUser.password,
       };
-      // jest.spyOn(authService, 'registerUser').mockResolvedValueOnce(undefined);
+      jest.spyOn(authService, 'registerUser').mockResolvedValueOnce(undefined);
       // when
       const result: void = await controller.register(regDto);
       // then
@@ -84,6 +77,7 @@ describe('AuthController', () => {
   describe('logout', () => {
     it('should call logout and return void if successfully', async () => {
       // given
+      jest.spyOn(authService, 'logout').mockResolvedValueOnce(undefined);
       // when
       const result: void = await controller.logout(mockUser.id);
       // then
@@ -144,8 +138,11 @@ describe('AuthController', () => {
         password: 'srt',
         confirmPassword: 'srt',
       };
+      jest
+        .spyOn(authService, 'resetUserPassword')
+        .mockResolvedValueOnce(undefined);
       // when
-      const result: void = await controller.forgotPass(dto, {
+      const result: void = await controller.resetUserPassword(dto, {
         id: mockUser.id,
         token: mockUser.refresh_token,
       });
@@ -162,6 +159,9 @@ describe('AuthController', () => {
   describe('forgot-password', () => {
     it('should call resetPassSendLink method and return void if successfully', async () => {
       // given
+      jest
+        .spyOn(authService, 'resetPassSendLink')
+        .mockResolvedValueOnce(undefined);
       // when
       const result: void = await controller.sendLink(mockUser.email);
       // then

@@ -4,6 +4,7 @@ import { User } from './user.schema';
 import { UserRoles } from './entities/user-roles.enum';
 import { UserService } from './user.service';
 import { NotFoundException } from '@nestjs/common';
+import { createMock } from '@golevelup/ts-jest';
 import SpyInstance = jest.SpyInstance;
 
 describe('UserController', () => {
@@ -26,11 +27,7 @@ describe('UserController', () => {
       providers: [
         {
           provide: UserService,
-          useValue: {
-            getAllUsers: jest.fn(),
-            findById: jest.fn(),
-            deleteById: jest.fn(),
-          },
+          useValue: createMock<UserService>(),
         },
       ],
     }).compile();

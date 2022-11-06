@@ -80,7 +80,7 @@ export class AuthController {
 
   @Public()
   @Put('/reset-password/:id/:token')
-  async forgotPass(
+  async resetUserPassword(
     @Body() resetPassDTO: ResetPassDto,
     @Param() { id, token }: { id: string; token: string },
   ): Promise<void> {
