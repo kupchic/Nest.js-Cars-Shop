@@ -96,7 +96,7 @@
       ".module.ts",
       "format-winston.ts",
       "config",
-      "common/decorators/*.ts"
+      "-decorator.ts"
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"

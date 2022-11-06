@@ -8,6 +8,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { User } from '../../user/user.schema';
 import { UserService } from '../../user/user.service';
 import { UserJwtPayload } from '../../user/entities/user-jwt-payload';
+import 'dotenv/config';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
@@ -20,13 +21,17 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   }
 
   async validate(payload: UserJwtPayload): Promise<User> {
-    const user: User = await this._userService.findById(payload.id);
-    if (!user || !user.refresh_token) {
-      throw new UnauthorizedException();
+    try {
+      const user: User = await this._userService.findById(payload.id);
+      if (!user || !user.refresh_token) {
+        throw new UnauthorizedException();
+      }
+      if (user.isBlocked) {
+        throw new ForbiddenException('User is blocked');
+      }
+      return user;
+    } catch (e) {
+      return e;
     }
-    if (user.isBlocked) {
-      throw new ForbiddenException('User is blocked');
-    }
-    return user;
   }
 }
