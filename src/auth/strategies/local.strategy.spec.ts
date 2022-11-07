@@ -60,12 +60,10 @@ describe('LocalStrategy', () => {
       const expectedError: UnauthorizedException = new UnauthorizedException();
       jest.spyOn(authService, 'validateUser').mockResolvedValueOnce(null);
       // when
-      const result: User = await strategy.validate(
-        mockUser.email,
-        mockUser.password,
-      );
       // then
-      expect(result).toEqual(expectedError);
+      await expect(
+        strategy.validate(mockUser.email, mockUser.password),
+      ).rejects.toEqual(expectedError);
     });
     it('should throw ForbiddenException if user is blocked', async () => {
       // given
@@ -77,12 +75,10 @@ describe('LocalStrategy', () => {
         isBlocked: true,
       });
       // when
-      const result: User = await strategy.validate(
-        mockUser.email,
-        mockUser.password,
-      );
       // then
-      expect(result).toEqual(expectedError);
+      await expect(
+        strategy.validate(mockUser.email, mockUser.password),
+      ).rejects.toEqual(expectedError);
     });
   });
 });

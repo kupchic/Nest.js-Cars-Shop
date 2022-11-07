@@ -59,9 +59,8 @@ describe('JwtStrategy', () => {
         .spyOn(userService, 'findById')
         .mockResolvedValueOnce(null);
       // when
-      const result: User = await strategy.validate(payload);
       // then
-      expect(result).toEqual(expectedError);
+      await expect(strategy.validate(payload)).rejects.toEqual(expectedError);
       expect(spy).nthCalledWith(1, payload.id);
     });
     it('should throw UnauthorizedException if user refresh_token was not found', async () => {
@@ -74,9 +73,8 @@ describe('JwtStrategy', () => {
           refresh_token: null,
         });
       // when
-      const result: User = await strategy.validate(payload);
       // then
-      expect(result).toEqual(expectedError);
+      await expect(strategy.validate(payload)).rejects.toEqual(expectedError);
       expect(spy).nthCalledWith(1, payload.id);
     });
     it('should throw ForbiddenException if user is blocked', async () => {
@@ -91,9 +89,8 @@ describe('JwtStrategy', () => {
           isBlocked: true,
         });
       // when
-      const result: User = await strategy.validate(payload);
       // then
-      expect(result).toEqual(expectedError);
+      await expect(strategy.validate(payload)).rejects.toEqual(expectedError);
       expect(spy).nthCalledWith(1, payload.id);
     });
   });

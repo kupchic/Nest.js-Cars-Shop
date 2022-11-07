@@ -14,7 +14,7 @@ describe('UserService', () => {
   let mockUserModel: Model<UserDocument>;
   const userPass: string = '123456';
   const mockUser: User = {
-    id: 'mock',
+    id: '63569752ea779b68568822ba',
     password: userPass,
     email: 'mock@gmail.com',
     roles: [UserRoles.CUSTOMER],
@@ -30,13 +30,22 @@ describe('UserService', () => {
         UserService,
         {
           provide: getModelToken(User.name),
-          useValue: Model,
+          useValue: {
+            find: jest.fn(),
+            findOne: jest.fn(),
+            findById: jest.fn(),
+            findByIdAndUpdate: jest.fn(),
+            findByIdAndDelete: jest.fn(),
+            create: jest.fn(),
+          },
         },
       ],
     }).compile();
 
     service = module.get<UserService>(UserService);
-    mockUserModel = module.get<Model<UserDocument>>(getModelToken(User.name));
+    mockUserModel = await module.get<Model<UserDocument>>(
+      getModelToken(User.name),
+    );
   });
 
   it('should be defined', () => {
@@ -75,13 +84,16 @@ describe('UserService', () => {
     });
     it('should throw ConflictException if user with email already exist', async () => {
       // given
+      mockUserModel.findOne = jest.fn().mockResolvedValueOnce(mockUser);
+      // jest.spyOn(mockUserModel, 'findOne').mockResolvedValueOnce(mockUser);
       const expectedError: ConflictException = new ConflictException(
         'The actor with the following email address is already registered.',
       );
       // when
-      const result: User = await service.registerUser(registerDto);
       //then
-      expect(result).toEqual(expectedError);
+      await expect(service.registerUser(registerDto)).rejects.toEqual(
+        expectedError,
+      );
     });
   });
   describe('getAllUsers', () => {
@@ -102,9 +114,8 @@ describe('UserService', () => {
         throw error;
       });
       // when
-      const result: User[] = await service.getAllUsers();
       //then
-      expect(result).toEqual(error);
+      await expect(service.getAllUsers()).rejects.toEqual(error);
     });
   });
 
@@ -125,9 +136,8 @@ describe('UserService', () => {
         throw e;
       });
       // when
-      const result: User = await service.findById(mockUser.id);
       // then
-      expect(result).toEqual(e);
+      await expect(service.findById(mockUser.id)).rejects.toEqual(e);
     });
   });
 
@@ -147,9 +157,8 @@ describe('UserService', () => {
         throw e;
       });
       // when
-      const result: User = await service.deleteById(mockUser.id);
       // then
-      expect(result).toEqual(e);
+      await expect(service.deleteById(mockUser.id)).rejects.toEqual(e);
     });
   });
   describe('partialUserUpdate', () => {
@@ -171,9 +180,10 @@ describe('UserService', () => {
         'Provide data to update',
       );
       // when
-      const result: User = await service.partialUserUpdate(mockUser.id, null);
       // then
-      expect(result).toEqual(e);
+      await expect(
+        service.partialUserUpdate(mockUser.id, null),
+      ).rejects.toEqual(e);
     });
   });
 });

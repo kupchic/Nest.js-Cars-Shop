@@ -1,20 +1,26 @@
 import { MailerService } from '@nestjs-modules/mailer';
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { User } from 'src/user/user.schema';
 
 @Injectable()
 export class MailService {
   constructor(private mailerService: MailerService) {}
 
-  async sendResetPassLink(user: User, url: string): Promise<any> {
-    return this.mailerService.sendMail({
-      to: user.email,
-      subject: 'Reset Password',
-      template: './reset-pass',
-      context: {
-        name: user.firstName,
-        url,
-      },
-    });
+  async sendResetPassLink(user: User, url: string): Promise<void> {
+    try {
+      await this.mailerService.sendMail({
+        to: user.email,
+        subject: 'Reset Password',
+        template: './reset-pass',
+        context: {
+          name: user.firstName,
+          url,
+        },
+      });
+    } catch (e) {
+      throw new ConflictException(
+        'Something went wrong when sending email. Try again',
+      );
+    }
   }
 }

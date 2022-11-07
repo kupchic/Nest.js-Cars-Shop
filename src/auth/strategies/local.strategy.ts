@@ -28,7 +28,7 @@ export class LocalStrategy extends PassportStrategy(Strategy, 'local') {
       }
       return user;
     } catch (e) {
-      return e;
+      throw e;
     }
   }
 }

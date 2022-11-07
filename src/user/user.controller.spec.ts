@@ -74,9 +74,10 @@ describe('UserController', () => {
         .spyOn(userService, 'findById')
         .mockResolvedValueOnce(null);
       //when
-      const result: User = await controller.getUserById(mockUser.id);
       // then
-      expect(result).toEqual(expectedError);
+      await expect(controller.getUserById(mockUser.id)).rejects.toEqual(
+        expectedError,
+      );
       expect(spy).nthCalledWith(1, mockUser.id);
     });
   });
@@ -101,9 +102,10 @@ describe('UserController', () => {
         .spyOn(userService, 'deleteById')
         .mockResolvedValueOnce(null);
       //when
-      const result: void = await controller.deleteUserById(mockUser.id);
       // then
-      expect(result).toEqual(expectedError);
+      await expect(controller.deleteUserById(mockUser.id)).rejects.toEqual(
+        expectedError,
+      );
       expect(spy).nthCalledWith(1, mockUser.id);
     });
   });

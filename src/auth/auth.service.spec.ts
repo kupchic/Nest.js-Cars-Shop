@@ -20,6 +20,7 @@ import { ResetPassDto } from './dto/reset-pass.dto';
 import { HttpException } from '@nestjs/common/exceptions/http.exception';
 import 'dotenv/config';
 import { RegisterDto } from './dto/register.dto';
+import { createMock } from '@golevelup/ts-jest';
 import SpyInstance = jest.SpyInstance;
 
 describe('AuthService', () => {
@@ -47,26 +48,15 @@ describe('AuthService', () => {
         AuthService,
         {
           provide: JwtService,
-          useValue: {
-            sign: jest.fn(),
-            verify: jest.fn(),
-          },
+          useValue: createMock<JwtService>(),
         },
         {
           provide: MailService,
-          useValue: {
-            sendResetPassLink: jest.fn(),
-          },
+          useValue: createMock<MailService>(),
         },
         {
           provide: UserService,
-          useValue: {
-            findByEmail: jest.fn(),
-            findById: jest.fn(),
-            comparePasswords: jest.fn(),
-            partialUserUpdate: jest.fn(),
-            registerUser: jest.fn(),
-          },
+          useValue: createMock<UserService>(),
         },
       ],
     }).compile();
@@ -171,9 +161,10 @@ describe('AuthService', () => {
         throw expectedError;
       });
       //when
-      const tokens: Tokens = await service[methodName](mockUser);
       //then
-      expect(tokens).toEqual(expectedError);
+      await expect(service[methodName](mockUser)).rejects.toEqual(
+        expectedError,
+      );
     });
   });
 
@@ -199,9 +190,10 @@ describe('AuthService', () => {
         .spyOn(usersService, 'partialUserUpdate')
         .mockRejectedValueOnce(new ConflictException());
       // when
-      const result: Tokens = await service.login(mockUser);
       // then
-      expect(result).toEqual(new ConflictException());
+      await expect(service.login(mockUser)).rejects.toEqual(
+        new ConflictException(),
+      );
     });
   });
 
@@ -228,9 +220,10 @@ describe('AuthService', () => {
         .spyOn(usersService, 'partialUserUpdate')
         .mockRejectedValueOnce(new ConflictException());
       // when
-      const result: any = await service.logout(mockUser.id);
       // then
-      expect(result).toEqual(new ConflictException());
+      await expect(service.logout(mockUser.id)).rejects.toEqual(
+        new ConflictException(),
+      );
     });
   });
   describe('changePassword', () => {
@@ -245,9 +238,10 @@ describe('AuthService', () => {
         'Wrong old password',
       );
       // when
-      const res: Tokens = await service.changePassword(changePassDto, mockUser);
       // then
-      expect(res).toEqual(expectedError);
+      await expect(
+        service.changePassword(changePassDto, mockUser),
+      ).rejects.toEqual(expectedError);
     });
     it('should throw error when new password compare to old password', async () => {
       // given
@@ -260,9 +254,10 @@ describe('AuthService', () => {
         'New password should not match the current',
       );
       // when
-      const res: Tokens = await service.changePassword(changePassDto, mockUser);
       // then
-      expect(res).toEqual(expectedError);
+      await expect(
+        service.changePassword(changePassDto, mockUser),
+      ).rejects.toEqual(expectedError);
     });
     it('should update user password and refresh token', async () => {
       // given
@@ -297,13 +292,10 @@ describe('AuthService', () => {
       );
       jest.spyOn(usersService, 'findById').mockResolvedValueOnce(null);
       // when
-      const result: void = await service.resetUserPassword(
-        resetPassDto,
-        mockUser.id,
-        '1',
-      );
       // then
-      expect(result).toEqual(expectedError);
+      await expect(
+        service.resetUserPassword(resetPassDto, mockUser.id, '1'),
+      ).rejects.toEqual(expectedError);
     });
     it('should throw ConflictException if link is expired', async () => {
       // given
@@ -316,13 +308,10 @@ describe('AuthService', () => {
       });
 
       // when
-      const result: void = await service.resetUserPassword(
-        resetPassDto,
-        mockUser.id,
-        '1',
-      );
       // then
-      expect(result).toEqual(expectedError);
+      await expect(
+        service.resetUserPassword(resetPassDto, mockUser.id, '1'),
+      ).rejects.toEqual(expectedError);
     });
     it('should throw ConflictException if new password match the current', async () => {
       // given
@@ -332,13 +321,14 @@ describe('AuthService', () => {
       jest.spyOn(usersService, 'findById').mockResolvedValueOnce(mockUser);
       jest.spyOn(usersService, 'comparePasswords').mockResolvedValueOnce(true);
       // when
-      const result: void = await service.resetUserPassword(
-        { ...resetPassDto, password: userPass },
-        mockUser.id,
-        '1',
-      );
       // then
-      expect(result).toEqual(expectedError);
+      await expect(
+        service.resetUserPassword(
+          { ...resetPassDto, password: userPass },
+          mockUser.id,
+          '1',
+        ),
+      ).rejects.toEqual(expectedError);
     });
 
     it('should update userPass if new password does not match the current', async () => {
@@ -374,9 +364,10 @@ describe('AuthService', () => {
       );
       jest.spyOn(usersService, 'findByEmail').mockResolvedValueOnce(null);
       // when
-      const result: void = await service.resetPassSendLink(mockUser.email);
       // then
-      expect(result).toEqual(expectedError);
+      await expect(service.resetPassSendLink(mockUser.email)).rejects.toEqual(
+        expectedError,
+      );
     });
     it('should call sendResetPassLink method of mailService with expected link and user data', async () => {
       // given
@@ -395,7 +386,9 @@ describe('AuthService', () => {
           secret: `${process.env.JWT_SECRET}${mockUser.id}${mockUser.password}`,
         },
       ];
-
+      jest
+        .spyOn(mailService, 'sendResetPassLink')
+        .mockResolvedValueOnce(undefined);
       jest.spyOn(usersService, 'findByEmail').mockResolvedValueOnce(mockUser);
       // when
       const result: void = await service.resetPassSendLink(mockUser.email);
@@ -416,9 +409,10 @@ describe('AuthService', () => {
         // given
         jest.spyOn(usersService, 'findById').mockResolvedValueOnce(null);
         // when
-        const result: Tokens = await service.refreshTokens(mockUser.id, 'test');
         // then
-        expect(result).toEqual(error);
+        await expect(
+          service.refreshTokens(mockUser.id, 'test'),
+        ).rejects.toEqual(error);
       });
       it('user refresh token is null', async () => {
         // given
@@ -426,9 +420,10 @@ describe('AuthService', () => {
           .spyOn(usersService, 'findById')
           .mockResolvedValueOnce({ ...mockUser, refresh_token: null });
         // when
-        const result: Tokens = await service.refreshTokens(mockUser.id, 'test');
         // then
-        expect(result).toEqual(error);
+        await expect(
+          service.refreshTokens(mockUser.id, 'test'),
+        ).rejects.toEqual(error);
       });
       it('user refresh token is not equal to request refresh token', async () => {
         // given
@@ -436,9 +431,10 @@ describe('AuthService', () => {
           .spyOn(usersService, 'findById')
           .mockResolvedValueOnce({ ...mockUser, refresh_token: 'test3' });
         // when
-        const result: Tokens = await service.refreshTokens(mockUser.id, 'test');
         // then
-        expect(result).toEqual(error);
+        await expect(
+          service.refreshTokens(mockUser.id, 'test'),
+        ).rejects.toEqual(error);
       });
     });
     it('should returns tokens if user refresh token is equal to request refresh token and update user refresh_token', async () => {

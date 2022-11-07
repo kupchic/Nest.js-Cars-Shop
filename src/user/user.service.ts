@@ -22,7 +22,7 @@ export class UserService {
         password: await this._hash(registerDto.password),
       });
     } catch (e) {
-      return e;
+      throw e;
     }
   }
 
@@ -30,7 +30,7 @@ export class UserService {
     try {
       return this.userModel.find({});
     } catch (e) {
-      return e;
+      throw e;
     }
   }
 
@@ -38,7 +38,7 @@ export class UserService {
     try {
       return this.userModel.findOne({ email });
     } catch (e) {
-      return e;
+      throw e;
     }
   }
 
@@ -46,7 +46,7 @@ export class UserService {
     try {
       return this.userModel.findById(id);
     } catch (e) {
-      return e;
+      throw e;
     }
   }
 
@@ -54,7 +54,7 @@ export class UserService {
     try {
       return this.userModel.findByIdAndDelete(id);
     } catch (e) {
-      return e;
+      throw e;
     }
   }
 
@@ -67,7 +67,7 @@ export class UserService {
         return this.userModel.findByIdAndUpdate(userId, state);
       } else throw new ConflictException('Provide data to update');
     } catch (e) {
-      return e;
+      throw e;
     }
   }
 

@@ -4,6 +4,7 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { SendMailOptions } from 'nodemailer';
 import { User } from '../user/user.schema';
 import { UserRoles } from '../user/entities/user-roles.enum';
+import { ConflictException } from '@nestjs/common';
 import SpyInstance = jest.SpyInstance;
 
 describe('MailService', () => {
@@ -57,9 +58,36 @@ describe('MailService', () => {
         .spyOn(mailerService, 'sendMail')
         .mockResolvedValueOnce('sent');
       // when
-      const result: any = await service.sendResetPassLink(mockUser, url);
+      const result: void = await service.sendResetPassLink(mockUser, url);
       // then
-      expect(result).toEqual('sent');
+      expect(result).toBeUndefined();
+      expect(spy).nthCalledWith(1, expectedConfig);
+    });
+    it('should throw error', async () => {
+      // given
+      const expectedError: ConflictException = new ConflictException(
+        'Something went wrong when sending email. Try again',
+      );
+      const url: string = 'example.com';
+      const expectedConfig: SendMailOptions = {
+        to: mockUser.email,
+        subject: 'Reset Password',
+        template: './reset-pass',
+        context: {
+          name: mockUser.firstName,
+          url,
+        },
+      } as any;
+      const spy: SpyInstance = jest
+        .spyOn(mailerService, 'sendMail')
+        .mockImplementationOnce(() => {
+          throw expectedError;
+        });
+      // when
+      // then
+      await expect(service.sendResetPassLink(mockUser, url)).rejects.toEqual(
+        expectedError,
+      );
       expect(spy).nthCalledWith(1, expectedConfig);
     });
   });

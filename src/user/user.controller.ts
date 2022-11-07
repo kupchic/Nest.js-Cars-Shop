@@ -39,7 +39,7 @@ export class UserController {
       }
       return user;
     } catch (e) {
-      return e;
+      throw e;
     }
   }
 
@@ -52,7 +52,7 @@ export class UserController {
         throw new NotFoundException('User not found');
       }
     } catch (e) {
-      return e;
+      throw e;
     }
   }
 }

@@ -47,7 +47,7 @@ export class AuthService {
       });
       return tokens;
     } catch (e) {
-      return e;
+      throw e;
     }
   }
 
@@ -57,7 +57,7 @@ export class AuthService {
         refresh_token: null,
       });
     } catch (e) {
-      return e;
+      throw e;
     }
   }
 
@@ -85,7 +85,7 @@ export class AuthService {
       });
       return tokens;
     } catch (e) {
-      return e;
+      throw e;
     }
   }
 
@@ -101,7 +101,7 @@ export class AuthService {
       });
       return tokens;
     } catch (e) {
-      return e;
+      throw e;
     }
   }
 
@@ -124,7 +124,7 @@ export class AuthService {
       const link: string = `http://localhost:5000/auth/reset-password/${user.id}/${token}`;
       return this.mailService.sendResetPassLink(user, link);
     } catch (e) {
-      return e;
+      throw e;
     }
   }
 
@@ -160,7 +160,7 @@ export class AuthService {
         password: await bcrypt.hash(resetPassDto.password, 10),
       });
     } catch (e) {
-      return e;
+      throw e;
     }
   }
 
@@ -186,7 +186,7 @@ export class AuthService {
         }),
       };
     } catch (e) {
-      return e;
+      throw e;
     }
   }
 
