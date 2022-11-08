@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { User } from '../../user/user.schema';
+import { User } from '../../schemas';
 import { UserService } from '../../user/user.service';
 import { UserJwtPayload } from '../../user/entities/user-jwt-payload';
 import 'dotenv/config';

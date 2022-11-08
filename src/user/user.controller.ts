@@ -5,7 +5,7 @@ import {
   NotFoundException,
   Param,
 } from '@nestjs/common';
-import { User } from './user.schema';
+import { User } from '../schemas';
 import { UserService } from './user.service';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { UserRoles } from './entities/user-roles.enum';

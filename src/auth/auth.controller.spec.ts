@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
-import { User } from '../user/user.schema';
+import { User } from '../schemas';
 import { UserRoles } from '../user/entities/user-roles.enum';
 import * as bcrypt from 'bcrypt';
 import { Tokens } from './types/tokens';

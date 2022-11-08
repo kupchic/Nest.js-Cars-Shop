@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserController } from './user.controller';
-import { User } from './user.schema';
+import { User } from '../schemas';
 import { UserRoles } from './entities/user-roles.enum';
 import { UserService } from './user.service';
 import { NotFoundException } from '@nestjs/common';

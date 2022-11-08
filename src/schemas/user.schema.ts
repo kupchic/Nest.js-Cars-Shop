@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { UserRoles } from './entities/user-roles.enum';
+import { UserRoles } from '../user/entities/user-roles.enum';
 import mongoose, { Document, ToObjectOptions } from 'mongoose';
 import { IsOptional } from 'class-validator';
 import { Exclude } from 'class-transformer';

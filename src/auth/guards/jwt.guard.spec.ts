@@ -2,6 +2,8 @@ import { Reflector } from '@nestjs/core';
 import { JwtAuthGuard } from './jwt.guard';
 import { ExecutionContext } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { AuthGuard } from '@nestjs/passport';
+import SpyInstance = jest.SpyInstance;
 
 describe('JwtAuthGuard', () => {
   let guard: JwtAuthGuard;
@@ -34,5 +36,18 @@ describe('JwtAuthGuard', () => {
     const canActivate: boolean = guard.canActivate(context) as boolean;
     // then
     expect(canActivate).toBe(true);
+  });
+  it('should call canActivate of super()', () => {
+    // given
+    reflector.getAllAndOverride = jest.fn().mockReturnValue(false);
+    const mockedSuperCanActivate: SpyInstance = jest
+      .spyOn(AuthGuard('jwt').prototype, 'canActivate')
+      .mockReturnValue(true);
+    // when
+    const canActivate: boolean = guard.canActivate(context) as boolean;
+    // then
+    expect(mockedSuperCanActivate).nthCalledWith(1, context);
+    expect(canActivate).toBe(true);
+    mockedSuperCanActivate.mockRestore();
   });
 });

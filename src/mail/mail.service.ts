@@ -1,6 +1,6 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import { ConflictException, Injectable } from '@nestjs/common';
-import { User } from 'src/user/user.schema';
+import { User } from '../schemas';
 
 @Injectable()
 export class MailService {
