@@ -3,7 +3,7 @@ import { AuthService } from './auth.service';
 import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { MailService } from '../mail/mail.service';
-import { User } from '../schemas';
+import { User } from '../user/schemas';
 import { UserRoles } from '../user/entities/user-roles.enum';
 import { LoginDto } from './dto/login.dto';
 import {

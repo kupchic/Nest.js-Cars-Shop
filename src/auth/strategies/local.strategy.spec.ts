@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { User } from '../../schemas';
+import { User } from '../../user/schemas';
 import { ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { LocalStrategy } from './local.strategy';
 import { AuthService } from '../auth.service';

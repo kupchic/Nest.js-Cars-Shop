@@ -14,7 +14,7 @@ import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LocalAuthGuard, RefreshTokenGuard } from './guards';
 import { ResetPassDto } from './dto/reset-pass.dto';
 import { Tokens } from './types/tokens';
-import { User } from '../schemas';
+import { User } from '../user/schemas';
 import { ChangePassDto } from './dto/change-pass.dto';
 import { GetCurrentUser, Public } from '../common/decorators';
 

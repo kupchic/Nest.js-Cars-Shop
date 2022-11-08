@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from './user.service';
 import { Model } from 'mongoose';
-import { User, UserDocument } from '../schemas';
+import { User, UserDocument } from './schemas';
 import { getModelToken } from '@nestjs/mongoose';
 import { UserRoles } from './entities/user-roles.enum';
 import { RegisterDto } from '../auth/dto/register.dto';
