@@ -1,12 +1,14 @@
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { INestApplication } from '@nestjs/common';
+import { RolesGuard } from './common/guards/roles.guard';
 
 async function bootstrap(): Promise<any> {
   const PORT: string = process.env.PORT || '5000';
   const app: INestApplication = await NestFactory.create(AppModule);
   app.enableCors();
+  app.useGlobalGuards(new RolesGuard(app.get(Reflector)));
   const config: Omit<OpenAPIObject, 'paths'> = new DocumentBuilder()
     .setTitle('Cars Shop')
     .setDescription('The Cars Shop API description')
