@@ -1,51 +1,74 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { IsDecimal, IsInt, IsOptional } from 'class-validator';
-import mongoose, { Document } from 'mongoose';
+import mongoose, { Document, ToObjectOptions } from 'mongoose';
 
-@Schema({ timestamps: true })
+const carOptions: ToObjectOptions = {
+  versionKey: false,
+  virtuals: true,
+  transform: function (doc, car) {
+    delete car._id;
+    return car;
+  },
+};
+
+@Schema({
+  timestamps: true,
+  versionKey: false,
+  toJSON: carOptions,
+})
 export class Car {
-  @Prop()
+  @Prop({ required: true, type: 'String' })
   carBrand: string;
 
-  @Prop()
+  @Prop({ required: true, type: 'String' })
   carModel: string;
 
-  @Prop()
+  @Prop({ required: true, type: 'String' })
   brandCountry: string;
 
-  @Prop()
+  @Prop({ required: true, type: 'String' })
   bodyType: string;
 
-  @Prop()
-  @IsInt()
+  @Prop({
+    required: true,
+    type: 'Number',
+    max: [
+      new Date().getFullYear(),
+      'yearOfIssue cant be greater than current year',
+    ],
+  })
   yearOfIssue: number;
 
-  @Prop()
+  @Prop({ required: true, type: 'String' })
   engineType: string;
 
-  @Prop()
-  @IsDecimal()
+  @Prop({
+    required: true,
+    type: 'Number',
+    set: (v: number) => +v.toFixed(1),
+  })
   engineSize: number;
 
-  @Prop()
+  @Prop({ required: true, type: 'String' })
   drive: string;
 
-  @Prop()
+  @Prop({ required: true, type: 'String' })
   transmissionType: string;
 
-  @Prop()
+  @Prop({ required: true, type: 'String' })
   color: string;
 
-  @Prop()
-  @IsDecimal()
+  @Prop({ required: true, type: 'Number' })
   price: number;
 
-  @Prop()
+  @Prop({ required: true, type: 'Number' })
   warranty: number;
 
-  @Prop()
-  @IsOptional()
+  @Prop({ required: false, type: 'String' })
   description: string;
+
+  id?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export const CarSchema: mongoose.Schema<Car> =
