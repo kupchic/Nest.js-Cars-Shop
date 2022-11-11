@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { createMock } from '@golevelup/ts-jest';
-import { UserJwtPayload } from '../../user/entities/user-jwt-payload';
+import { UserJwtPayload } from '../../user/model/user-jwt-payload';
 import { RefreshTokenStrategy } from './refresh-token.strategy';
 import { Request } from 'express';
 import SpyInstance = jest.SpyInstance;

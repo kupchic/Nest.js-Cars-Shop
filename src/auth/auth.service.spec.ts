@@ -4,14 +4,14 @@ import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { MailService } from '../mail/mail.service';
 import { User } from '../user/schemas';
-import { UserRoles } from '../user/entities/user-roles.enum';
+import { UserRoles } from '../user/model/enum/user-roles.enum';
 import { LoginDto } from './dto/login.dto';
 import {
   ConflictException,
   ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
-import { UserJwtPayload } from '../user/entities/user-jwt-payload';
+import { UserJwtPayload } from '../user/model/user-jwt-payload';
 import { Tokens } from './types/tokens';
 import { JwtSignOptions } from '@nestjs/jwt/dist/interfaces';
 import { ChangePassDto } from './dto/change-pass.dto';

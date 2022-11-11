@@ -8,8 +8,9 @@ import { UserModule } from './user/user.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.module';
 import { APP_GUARD, APP_PIPE } from '@nestjs/core';
-import { JwtAuthGuard } from './auth/guards/jwt.guard';
+import { JwtAuthGuard } from './auth/guards';
 import { MailModule } from './mail/mail.module';
+import { MongoIdStringPipe } from './common/pipes';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { MailModule } from './mail/mail.module';
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
     },
+    MongoIdStringPipe,
   ],
 })
 export class AppModule {}

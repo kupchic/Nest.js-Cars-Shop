@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { UserRoles } from '../entities/user-roles.enum';
+import { UserRoles } from '../model/enum/user-roles.enum';
 import mongoose, { Document, ToObjectOptions } from 'mongoose';
 import { IsOptional } from 'class-validator';
 import { Exclude } from 'class-transformer';
@@ -15,28 +15,33 @@ const userOptions: ToObjectOptions = {
 
 @Schema({ toJSON: userOptions })
 export class User {
-  @Prop()
+  @Prop({ required: true, type: 'String' })
   firstName: string;
 
-  @Prop()
+  @Prop({ required: true, type: 'String' })
   lastName: string;
 
-  @Prop()
+  @Prop({ required: true, type: 'String' })
   email: string;
 
-  @Prop()
+  @Prop({ required: true, type: 'String' })
   password: string;
 
-  @Prop()
+  @Prop({ required: true, type: 'String' })
   phone: string;
 
   @Prop({
     default: () => [UserRoles.CUSTOMER],
+    required: true,
+    type: [String],
+    enum: UserRoles,
   })
-  roles: [UserRoles];
+  roles: UserRoles[];
 
   @Prop({
     default: () => false,
+    required: false,
+    type: 'Boolean',
   })
   isBlocked: boolean;
 
@@ -44,11 +49,11 @@ export class User {
   @Exclude()
   @Prop({
     default: () => null,
+    required: false,
+    type: 'String',
   })
   refresh_token: string;
 
-  @IsOptional()
-  @Exclude()
   id?: string;
 }
 

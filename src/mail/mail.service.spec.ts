@@ -3,7 +3,7 @@ import { MailService } from './mail.service';
 import { MailerService } from '@nestjs-modules/mailer';
 import { SendMailOptions } from 'nodemailer';
 import { User } from '../user/schemas';
-import { UserRoles } from '../user/entities/user-roles.enum';
+import { UserRoles } from '../user/model/enum/user-roles.enum';
 import { ConflictException } from '@nestjs/common';
 import SpyInstance = jest.SpyInstance;
 

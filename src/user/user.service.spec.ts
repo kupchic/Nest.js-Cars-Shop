@@ -3,7 +3,7 @@ import { UserService } from './user.service';
 import { Model } from 'mongoose';
 import { User, UserDocument } from './schemas';
 import { getModelToken } from '@nestjs/mongoose';
-import { UserRoles } from './entities/user-roles.enum';
+import { UserRoles } from './model/enum/user-roles.enum';
 import { RegisterDto } from '../auth/dto/register.dto';
 import * as bcrypt from 'bcrypt';
 import { ConflictException } from '@nestjs/common';

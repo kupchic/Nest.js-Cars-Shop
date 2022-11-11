@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  IsEnum,
   IsInt,
   IsNotEmpty,
   IsNumber,
@@ -7,8 +8,13 @@ import {
   Max,
   Min,
 } from 'class-validator';
+import { DriveTypes } from '../model/enums/drive-types.enum';
+import { TransmissionTypes } from '../model/enums/transmission-types.enum';
+import { EngineTypes } from '../model/enums/engine-types.enum';
+import { BodyTypes } from '../model/enums/body-types.enum';
+import { ProductColors } from '../model/enums/product-colors.enum';
 
-export class CreateCarDto {
+export class CreateProductDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
@@ -24,10 +30,9 @@ export class CreateCarDto {
   @IsNotEmpty()
   brandCountry: string;
 
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  bodyType: string;
+  @ApiProperty({ enum: BodyTypes })
+  @IsEnum(BodyTypes)
+  bodyType: BodyTypes;
 
   @ApiProperty({
     description:
@@ -37,31 +42,29 @@ export class CreateCarDto {
   @Max(new Date().getFullYear())
   yearOfIssue: number;
 
-  @ApiProperty()
-  @IsString()
+  @ApiProperty({ enum: EngineTypes })
+  @IsEnum(EngineTypes)
   @IsNotEmpty()
-  engineType: string;
+  engineType: EngineTypes;
 
   @ApiProperty()
   @IsNumber()
-  @Max(10)
-  @Min(0)
+  @Max(8)
+  @Min(1)
   engineSize: number;
 
-  @ApiProperty()
-  @IsString()
+  @ApiProperty({ enum: DriveTypes })
+  @IsEnum(DriveTypes)
+  drive: DriveTypes;
+
+  @ApiProperty({ enum: TransmissionTypes })
+  @IsEnum(TransmissionTypes)
   @IsNotEmpty()
-  drive: string;
+  transmissionType: TransmissionTypes;
 
   @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  transmissionType: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  color: string;
+  @IsEnum(ProductColors)
+  color: ProductColors;
 
   @ApiProperty({
     description: 'Should be selected within the range 100 - 500000 EUR',

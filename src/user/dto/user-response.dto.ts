@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { UserRoles } from './user-roles.enum';
+import { UserRoles } from '../model/enum/user-roles.enum';
 
 export class UserDto {
   @ApiProperty()
@@ -21,6 +21,7 @@ export class UserDto {
   phone: string;
 
   @ApiProperty({
+    isArray: true,
     enum: UserRoles,
     enumName: 'UserRoles',
   })

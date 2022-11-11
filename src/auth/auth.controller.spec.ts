@@ -3,7 +3,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { User } from '../user/schemas';
-import { UserRoles } from '../user/entities/user-roles.enum';
+import { UserRoles } from '../user/model/enum/user-roles.enum';
 import * as bcrypt from 'bcrypt';
 import { Tokens } from './types/tokens';
 import { ChangePassDto } from './dto/change-pass.dto';
