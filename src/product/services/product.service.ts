@@ -1,25 +1,34 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
-  NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Product, ProductDocument } from '../schemas';
-import { CreateProductDto } from '../dto/create-product.dto';
+import {
+  Product,
+  ProductBrand,
+  ProductDocument,
+  ProductModel,
+} from '../schemas';
+import { CreateProductDto } from '../dto';
 import { ProductModelService } from './product-model.service';
-import { ProductModel } from '../schemas/product-model.schema';
+import { ProductBrandService } from './product-brand.service';
 
 @Injectable()
 export class ProductService {
   constructor(
     @InjectModel(Product.name) private productModel: Model<ProductDocument>,
     private productModelService: ProductModelService,
+    private productBrandService: ProductBrandService,
   ) {}
 
   async getAllProducts(): Promise<Product[]> {
     try {
-      return await this.productModel.find().exec();
+      return await this.productModel
+        .find()
+        .populate(['productBrand', 'productModel'])
+        .exec();
     } catch (e) {
       throw new BadRequestException(e.message);
     }
@@ -27,36 +36,80 @@ export class ProductService {
 
   async createProduct(createDto: CreateProductDto): Promise<Product> {
     try {
-      let model: ProductModel = await this.productModelService.findByName(
-        createDto.carModel,
+      const model: ProductModel = await this.productModelService.getModel(
+        createDto.productModel,
       );
       if (!model) {
-        model = await this.productModelService.create(createDto.carModel);
+        throw new BadRequestException(
+          'Not Possible to create a product. Model with such id is not found.',
+        );
       }
-      return await this.productModel.create({ ...createDto, carModel: model });
+      const brand: ProductBrand = await this.productBrandService.getBrand(
+        createDto.productBrand,
+      );
+      if (!brand) {
+        throw new BadRequestException(
+          'Not Possible to create a product. Brand with such id is not found.',
+        );
+      }
+      return await this.productModel.create({
+        ...createDto,
+        productModel: model,
+        productBrand: brand,
+      });
     } catch (e) {
-      throw new BadRequestException(e.message);
+      throw e;
     }
   }
 
-  async deleteProduct(id: string): Promise<void> {
+  async deleteProduct(id: string): Promise<Product> {
     try {
-      const product: Product = await this.productModel.findByIdAndDelete(id);
-      if (!product) {
-        throw new NotFoundException('Product not found');
-      }
+      return this.productModel.findByIdAndDelete(id);
     } catch (e) {
-      throw e instanceof NotFoundException
-        ? e
-        : new BadRequestException(e.message);
+      new BadRequestException(e.message);
     }
   }
 
   async getById(id: string): Promise<Product> {
     try {
-      return await this.productModel.findById(id);
+      return await this.productModel
+        .findById(id)
+        .populate(['productModel', 'productBrand'])
+        .exec();
     } catch (e) {
       throw new BadRequestException(e.message);
+    }
+  }
+
+  async deleteProductModel(id: string): Promise<ProductModel> {
+    try {
+      const product: ProductModel = await this.productModel.findOne({
+        productModel: id,
+      });
+      if (product) {
+        throw new ConflictException(
+          'This model is already used in the catalogs, deleting is impossible',
+        );
+      }
+      return await this.productModelService.deleteModel(id);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async deleteProductBrand(id: string): Promise<ProductBrand> {
+    try {
+      const product: ProductModel = await this.productModel.findOne({
+        productBrand: id,
+      });
+      if (product) {
+        throw new ConflictException(
+          'This brand is already used in the catalogs, deleting is impossible',
+        );
+      }
+      return await this.productBrandService.deleteBrand(id);
+    } catch (e) {
+      throw e;
     }
   }
 }

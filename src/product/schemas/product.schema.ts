@@ -1,11 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document, ToObjectOptions } from 'mongoose';
 import { ProductModel } from './product-model.schema';
-import { BodyTypes } from '../model/enums/body-types.enum';
-import { EngineTypes } from '../model/enums/engine-types.enum';
-import { DriveTypes } from '../model/enums/drive-types.enum';
-import { TransmissionTypes } from '../model/enums/transmission-types.enum';
 import { ProductColors } from '../model/enums/product-colors.enum';
+import { ProductBrand } from './product-brand.schema';
 
 const carOptions: ToObjectOptions = {
   versionKey: false,
@@ -23,24 +20,23 @@ const carOptions: ToObjectOptions = {
   toJSON: carOptions,
 })
 export class Product {
-  @Prop({ required: true, type: 'String' })
-  carBrand: string;
+  @Prop({
+    required: true,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: ProductBrand.name,
+  })
+  productBrand: ProductBrand;
 
   @Prop({
     required: true,
     type: mongoose.Schema.Types.ObjectId,
     ref: ProductModel.name,
-    get(v: ProductModel): string {
-      return v.name;
-    },
+
+    // get(v: ProductModel): ProductModel {
+    //   return v.forProduct();
+    // },
   })
-  carModel: ProductModel;
-
-  @Prop({ required: true, type: 'String' })
-  brandCountry: string;
-
-  @Prop({ required: true, enum: BodyTypes })
-  bodyType: string;
+  productModel: ProductModel;
 
   @Prop({
     required: true,
@@ -51,24 +47,6 @@ export class Product {
     ],
   })
   yearOfIssue: number;
-
-  @Prop({ required: true, enum: EngineTypes })
-  engineType: string;
-
-  @Prop({
-    required: true,
-    type: 'Number',
-    set: (v: number) => +v.toFixed(1),
-    max: 8,
-    min: 1,
-  })
-  engineSize: number;
-
-  @Prop({ required: true, enum: DriveTypes })
-  drive: string;
-
-  @Prop({ required: true, enum: TransmissionTypes })
-  transmissionType: string;
 
   @Prop({ required: true, enum: ProductColors })
   color: string;

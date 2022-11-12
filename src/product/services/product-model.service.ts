@@ -1,10 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import {
-  ProductModel,
-  ProductModelDocument,
-} from '../schemas/product-model.schema';
+import { ProductModel, ProductModelDocument } from '../schemas';
 import { Model } from 'mongoose';
+import { CreateProductModelDto } from '../dto';
+import { UpdateProductModelDto } from '../dto/update-product-model.dto';
 
 @Injectable()
 export class ProductModelService {
@@ -21,13 +20,11 @@ export class ProductModelService {
     }
   }
 
-  async create(name: string): Promise<ProductModel> {
+  async create(dto: CreateProductModelDto): Promise<ProductModel> {
     try {
-      return await this.productModelsModel.create({
-        name,
-      });
+      return await this.productModelsModel.create(dto);
     } catch (e) {
-      throw e;
+      throw new BadRequestException(e.message);
     }
   }
 
@@ -35,7 +32,36 @@ export class ProductModelService {
     try {
       return await this.productModelsModel.find().exec();
     } catch (e) {
-      throw e;
+      throw new BadRequestException(e.message);
+    }
+  }
+
+  async getModel(id: string): Promise<ProductModel> {
+    try {
+      return await this.productModelsModel.findById(id).exec();
+    } catch (e) {
+      throw new BadRequestException(e.message);
+    }
+  }
+
+  async deleteModel(id: string): Promise<ProductModel> {
+    try {
+      return await this.productModelsModel.findByIdAndDelete(id).exec();
+    } catch (e) {
+      throw new BadRequestException(e.message);
+    }
+  }
+
+  async updateModel(
+    id,
+    toUpdate: UpdateProductModelDto,
+  ): Promise<ProductModel> {
+    try {
+      return this.productModelsModel.findByIdAndUpdate(id, toUpdate, {
+        new: true,
+      });
+    } catch (e) {
+      throw new BadRequestException(e.message);
     }
   }
 }
