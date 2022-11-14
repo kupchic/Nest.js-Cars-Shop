@@ -10,18 +10,20 @@ import {
 } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ProductService } from './services/product.service';
-import { Public } from '../common/decorators';
+import { Roles } from '../common/decorators';
 import { Product, ProductBrand, ProductModel } from './schemas';
 import {
   CreateProductBrandDto,
   CreateProductDto,
   CreateProductModelDto,
   UpdateProductBrandDto,
+  UpdateProductDto,
 } from './dto';
 import { ProductModelService } from './services/product-model.service';
 import { MongoIdStringPipe } from '../common/pipes';
 import { ProductBrandService } from './services/product-brand.service';
 import { UpdateProductModelDto } from './dto/update-product-model.dto';
+import { UserRoles } from '../user/model/enum/user-roles.enum';
 
 @ApiTags('Product Module')
 @Controller('products')
@@ -36,7 +38,6 @@ export class ProductController {
     type: Product,
     isArray: true,
   })
-  @Public() //TODO everywhere
   @Get()
   getAll(): Promise<Product[]> {
     return this.productService.getAllProducts();
@@ -45,13 +46,25 @@ export class ProductController {
   @ApiResponse({
     type: Product,
   })
-  @Public()
+  @Roles(UserRoles.ADMIN)
   @Post('create')
   create(@Body() createDto: CreateProductDto): Promise<Product> {
     return this.productService.createProduct(createDto);
   }
 
-  @Public()
+  @ApiResponse({
+    type: Product,
+  })
+  @Roles(UserRoles.ADMIN)
+  @Put(':id')
+  updateProduct(
+    @Param('id', MongoIdStringPipe) id: string,
+    @Body() updateDto: UpdateProductDto,
+  ): Promise<Product> {
+    return this.productService.updateProduct(id, updateDto);
+  }
+
+  @Roles(UserRoles.ADMIN)
   @Delete(':id')
   async delete(@Param('id', MongoIdStringPipe) id: string): Promise<void> {
     const product: Product = await this.productService.deleteProduct(id);
@@ -64,7 +77,6 @@ export class ProductController {
     type: ProductModel,
     isArray: true,
   })
-  @Public()
   @Get('models')
   getAllModels(): Promise<ProductModel[]> {
     return this.productModelsService.getAllModels();
@@ -74,13 +86,11 @@ export class ProductController {
     type: ProductBrand,
     isArray: true,
   })
-  @Public()
   @Get('brands')
   getAllBrands(): Promise<ProductBrand[]> {
     return this.productBrandService.getAllBrands();
   }
 
-  @Public()
   @Get(':id')
   async getOne(@Param('id', MongoIdStringPipe) id: string): Promise<Product> {
     const product: Product = await this.productService.getById(id);
@@ -93,7 +103,6 @@ export class ProductController {
   @ApiResponse({
     type: ProductModel,
   })
-  @Public()
   @Get('models/:id')
   async getModel(
     @Param('id', MongoIdStringPipe) id: string,
@@ -108,7 +117,7 @@ export class ProductController {
   @ApiResponse({
     type: ProductModel,
   })
-  @Public()
+  @Roles(UserRoles.MANAGER)
   @Put('models/:id')
   async updateModel(
     @Param('id', MongoIdStringPipe) id: string,
@@ -124,8 +133,7 @@ export class ProductController {
     return model;
   }
 
-  @ApiResponse({})
-  @Public()
+  @Roles(UserRoles.ADMIN)
   @Delete('models/:id')
   async deleteModel(@Param('id', MongoIdStringPipe) id: string): Promise<void> {
     const model: ProductModel = await this.productService.deleteProductModel(
@@ -139,7 +147,7 @@ export class ProductController {
   @ApiResponse({
     type: ProductModel,
   })
-  @Public()
+  @Roles(UserRoles.MANAGER)
   @Post('models/create')
   createModel(@Body() createDto: CreateProductModelDto): Promise<ProductModel> {
     return this.productModelsService.create(createDto);
@@ -148,7 +156,6 @@ export class ProductController {
   @ApiResponse({
     type: ProductBrand,
   })
-  @Public()
   @Get('brands/:id')
   async getBrand(
     @Param('id', MongoIdStringPipe) id: string,
@@ -163,7 +170,7 @@ export class ProductController {
   @ApiResponse({
     type: ProductBrand,
   })
-  @Public()
+  @Roles(UserRoles.MANAGER)
   @Put('brands/:id')
   async updateBrand(
     @Param('id', MongoIdStringPipe) id: string,
@@ -179,8 +186,7 @@ export class ProductController {
     return brand;
   }
 
-  @ApiResponse({})
-  @Public()
+  @Roles(UserRoles.ADMIN)
   @Delete('brands/:id')
   async deleteBrand(@Param('id', MongoIdStringPipe) id: string): Promise<void> {
     const brand: ProductBrand = await this.productService.deleteProductBrand(
@@ -194,7 +200,7 @@ export class ProductController {
   @ApiResponse({
     type: ProductBrand,
   })
-  @Public()
+  @Roles(UserRoles.MANAGER)
   @Post('brands/create')
   createBrand(@Body() createDto: CreateProductBrandDto): Promise<ProductBrand> {
     return this.productBrandService.create(createDto);

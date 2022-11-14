@@ -11,7 +11,7 @@ import {
   ProductDocument,
   ProductModel,
 } from '../schemas';
-import { CreateProductDto } from '../dto';
+import { CreateProductDto, UpdateProductDto } from '../dto';
 import { ProductModelService } from './product-model.service';
 import { ProductBrandService } from './product-brand.service';
 
@@ -62,6 +62,20 @@ export class ProductService {
     }
   }
 
+  async updateProduct(
+    id: string,
+    updateDto: UpdateProductDto,
+  ): Promise<Product> {
+    try {
+      return await this.productModel
+        .findByIdAndUpdate(id, updateDto, { new: true })
+        .populate(this._populateFields)
+        .exec();
+    } catch (e) {
+      new BadRequestException(e.message);
+    }
+  }
+
   async deleteProduct(id: string): Promise<Product> {
     try {
       return this.productModel.findByIdAndDelete(id);
@@ -74,7 +88,7 @@ export class ProductService {
     try {
       return await this.productModel
         .findById(id)
-        .populate(['productModel', 'productBrand'])
+        .populate(this._populateFields)
         .exec();
     } catch (e) {
       throw new BadRequestException(e.message);
@@ -111,5 +125,9 @@ export class ProductService {
     } catch (e) {
       throw e;
     }
+  }
+
+  private get _populateFields(): string[] {
+    return ['productModel', 'productBrand'];
   }
 }
