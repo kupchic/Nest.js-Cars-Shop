@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ProductService } from './services/product.service';
+import { ProductService } from './product.service';
 import { ProductController } from './product.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import {
@@ -10,8 +10,10 @@ import {
   ProductModelSchema,
   ProductSchema,
 } from './schemas';
-import { ProductModelService } from './services/product-model.service';
-import { ProductBrandService } from './services/product-brand.service';
+import { ProductModelService } from './product-model/product-model.service';
+import { ProductBrandService } from './product-brand/product-brand.service';
+import { ProductBrandController } from './product-brand/product-brand.controller';
+import { ProductModelController } from './product-model/product-model.controller';
 
 @Module({
   imports: [
@@ -28,6 +30,10 @@ import { ProductBrandService } from './services/product-brand.service';
     ]),
   ],
   providers: [ProductService, ProductModelService, ProductBrandService],
-  controllers: [ProductController],
+  controllers: [
+    ProductBrandController,
+    ProductModelController,
+    ProductController,
+  ],
 })
 export class ProductModule {}

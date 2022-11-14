@@ -10,10 +10,10 @@ import {
   ProductBrand,
   ProductDocument,
   ProductModel,
-} from '../schemas';
-import { CreateProductDto, UpdateProductDto } from '../dto';
-import { ProductModelService } from './product-model.service';
-import { ProductBrandService } from './product-brand.service';
+} from './schemas';
+import { CreateProductDto, UpdateProductDto } from './dto';
+import { ProductModelService } from './product-model/product-model.service';
+import { ProductBrandService } from './product-brand/product-brand.service';
 
 @Injectable()
 export class ProductService {
