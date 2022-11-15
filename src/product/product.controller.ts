@@ -7,6 +7,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ProductService } from './product.service';
@@ -15,6 +16,7 @@ import { Product } from './schemas';
 import { CreateProductDto, UpdateProductDto } from './dto';
 import { MongoIdStringPipe } from '../common/pipes';
 import { UserRoles } from '../user/model/enum/user-roles.enum';
+import { KeyValuePairs } from '../common/model';
 
 @ApiTags('Product Module')
 @Controller('products')
@@ -28,6 +30,11 @@ export class ProductController {
   @Get()
   getAll(): Promise<Product[]> {
     return this.productService.getAllProducts();
+  }
+
+  @Get('search')
+  search(@Query() query: KeyValuePairs<any>): Promise<Product[]> {
+    return this.productService.search(query);
   }
 
   @Get(':id')

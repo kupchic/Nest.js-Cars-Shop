@@ -31,10 +31,6 @@ export class Product {
     required: true,
     type: mongoose.Schema.Types.ObjectId,
     ref: ProductModel.name,
-
-    // get(v: ProductModel): ProductModel {
-    //   return v.forProduct();
-    // },
   })
   productModel: ProductModel;
 

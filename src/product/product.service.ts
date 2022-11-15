@@ -4,7 +4,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
 import {
   Product,
   ProductBrand,
@@ -14,6 +14,7 @@ import {
 import { CreateProductDto, UpdateProductDto } from './dto';
 import { ProductModelService } from './product-model/product-model.service';
 import { ProductBrandService } from './product-brand/product-brand.service';
+import { KeyValuePairs, OrderByEnum } from '../common/model';
 
 @Injectable()
 export class ProductService {
@@ -31,6 +32,117 @@ export class ProductService {
         .exec();
     } catch (e) {
       throw new BadRequestException(e.message);
+    }
+  }
+
+  async search(query: KeyValuePairs<string>): Promise<Product[]> {
+    console.log(query);
+    try {
+      const match: FilterQuery<Product> = {};
+      const sort: KeyValuePairs<any> = {
+        // createdAt: -1,
+      };
+      if (query.sortBy && query.orderBy) {
+        sort[query.sortBy] = query.orderBy === OrderByEnum.DESC ? -1 : 1;
+      } else {
+        sort.createdAt = -1;
+      }
+      const limit: number = parseInt(query.pageSize) || 20;
+      const skip: number = ((parseInt(query.page) || 1) - 1) * limit;
+      if (query.search) {
+        const reg: RegExp = new RegExp(query.search, 'i');
+        match['$or'] = [
+          {
+            description: reg,
+          },
+          {
+            'productModel.modelName': reg,
+          },
+          {
+            'productBrand.brandName': reg,
+          },
+        ];
+      }
+      return await this.productModel.aggregate<Product>([
+        {
+          $lookup: {
+            from: 'productbrands',
+            localField: 'productBrand',
+            foreignField: '_id',
+            as: 'productBrand',
+            pipeline: [
+              {
+                $addFields: {
+                  id: {
+                    $toString: '$_id',
+                  },
+                },
+              },
+              {
+                $project: {
+                  _id: 0,
+                },
+              },
+            ],
+          },
+        },
+        {
+          $lookup: {
+            from: 'productmodels',
+            localField: 'productModel',
+            foreignField: '_id',
+            as: 'productModel',
+            pipeline: [
+              {
+                $addFields: {
+                  id: {
+                    $toString: '$_id',
+                  },
+                },
+              },
+              {
+                $project: {
+                  _id: 0,
+                },
+              },
+            ],
+          },
+        },
+        {
+          $unwind: {
+            path: '$productBrand',
+          },
+        },
+        {
+          $unwind: {
+            path: '$productModel',
+          },
+        },
+        {
+          $match: match,
+        },
+        {
+          $skip: skip,
+        },
+        {
+          $limit: limit,
+        },
+        {
+          $sort: sort,
+        },
+        {
+          $addFields: {
+            id: {
+              $toString: '$_id',
+            },
+          },
+        },
+        {
+          $unset: '_id', // or $project
+        },
+      ]);
+    } catch (e) {
+      throw e;
     }
   }
 

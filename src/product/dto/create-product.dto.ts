@@ -1,5 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsInt, IsMongoId, IsNumber, Max, Min } from 'class-validator';
+import {
+  IsEnum,
+  IsInt,
+  IsMongoId,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Length,
+  Max,
+  Min,
+} from 'class-validator';
 import { ProductColors } from '../model/enums/product-colors.enum';
 
 export class CreateProductDto {
@@ -38,4 +49,11 @@ export class CreateProductDto {
   @Min(10)
   @Max(100)
   warranty: number;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  @Length(5, 255)
+  description?: string;
 }
