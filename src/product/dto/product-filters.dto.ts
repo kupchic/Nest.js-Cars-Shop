@@ -1,25 +1,38 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsInt, IsMongoId } from 'class-validator';
+import {
+  IsEnum,
+  IsInt,
+  IsMongoId,
+  IsOptional,
+  IsPositive,
+} from 'class-validator';
 import { BodyTypes } from '../model/enums/body-types.enum';
 
-class ProductFiltersDto {
+export class ProductFiltersDto {
   @ApiProperty({ description: 'Id of some of existed brand' })
   @IsMongoId()
-  productBrand: string;
+  @IsOptional()
+  productBrand?: string;
 
   @ApiProperty({ description: 'Id of some of existed model' })
   @IsMongoId()
-  productModel: string;
+  @IsOptional()
+  productModel?: string;
 
   @ApiProperty({ enum: BodyTypes })
   @IsEnum(BodyTypes)
-  bodyType: BodyTypes;
+  @IsOptional()
+  bodyType?: BodyTypes;
 
   @ApiProperty()
   @IsInt()
-  priceFrom: number;
+  @IsPositive()
+  @IsOptional()
+  priceFrom?: number;
 
   @ApiProperty()
   @IsInt()
-  priceTo: number;
+  @IsPositive()
+  @IsOptional()
+  priceTo?: number;
 }

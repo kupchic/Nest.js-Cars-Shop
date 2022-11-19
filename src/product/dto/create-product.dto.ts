@@ -27,6 +27,7 @@ export class CreateProductDto {
       'Should be selected within the range from 1900 till current year.',
   })
   @IsInt()
+  @Min(1900)
   @Max(new Date().getFullYear())
   yearOfIssue: number;
 

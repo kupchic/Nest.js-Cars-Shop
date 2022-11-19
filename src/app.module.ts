@@ -34,6 +34,7 @@ import { MongoIdStringPipe } from './common/pipes';
       useValue: new ValidationPipe({
         transform: true,
         whitelist: true,
+        forbidNonWhitelisted: true,
       }),
     },
     {

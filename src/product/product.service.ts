@@ -11,10 +11,11 @@ import {
   ProductDocument,
   ProductModel,
 } from './schemas';
-import { CreateProductDto, UpdateProductDto } from './dto';
+import { CreateProductDto, ProductFiltersDto, UpdateProductDto } from './dto';
 import { ProductModelService } from './product-model/product-model.service';
 import { ProductBrandService } from './product-brand/product-brand.service';
 import { KeyValuePairs, OrderByEnum } from '../common/model';
+import { ProductSearchQueryDto } from './dto/product-search-query.dto';
 
 @Injectable()
 export class ProductService {
@@ -24,32 +25,21 @@ export class ProductService {
     private productBrandService: ProductBrandService,
   ) {}
 
-  async getAllProducts(): Promise<Product[]> {
-    try {
-      return await this.productModel
-        .find()
-        .populate(['productBrand', 'productModel'])
-        .exec();
-    } catch (e) {
-      throw new BadRequestException(e.message);
-    }
-  }
-
-  async search(query: KeyValuePairs<string>): Promise<Product[]> {
-    console.log(query);
+  async search(
+    query?: ProductSearchQueryDto,
+    filters?: ProductFiltersDto,
+  ): Promise<Product[]> {
     try {
       const match: FilterQuery<Product> = {};
-      const sort: KeyValuePairs<any> = {
-        // createdAt: -1,
-      };
-      if (query.sortBy && query.orderBy) {
+      const sort: KeyValuePairs<any> = {};
+      if (query?.sortBy && query?.orderBy) {
         sort[query.sortBy] = query.orderBy === OrderByEnum.DESC ? -1 : 1;
       } else {
         sort.createdAt = -1;
       }
-      const limit: number = parseInt(query.pageSize) || 20;
-      const skip: number = ((parseInt(query.page) || 1) - 1) * limit;
-      if (query.search) {
+      const limit: number = parseInt(query?.pageSize || '20');
+      const skip: number = (parseInt(query?.page || '1') - 1) * limit;
+      if (query?.search) {
         const reg: RegExp = new RegExp(query.search, 'i');
         match['$or'] = [
           {
