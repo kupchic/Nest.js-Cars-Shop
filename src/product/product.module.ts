@@ -3,11 +3,11 @@ import { ProductService } from './product.service';
 import { ProductController } from './product.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import {
-  Product,
-  ProductBrand,
+  PRODUCT_BRANDS_COLLECTION_NAME,
+  PRODUCT_MODELS_COLLECTION_NAME,
   ProductBrandSchema,
-  ProductModel,
   ProductModelSchema,
+  PRODUCTS_COLLECTION_NAME,
   ProductSchema,
 } from './schemas';
 import { ProductModelService } from './product-model/product-model.service';
@@ -18,13 +18,13 @@ import { ProductModelController } from './product-model/product-model.controller
 @Module({
   imports: [
     MongooseModule.forFeature([
-      { name: Product.name, schema: ProductSchema },
+      { name: PRODUCTS_COLLECTION_NAME, schema: ProductSchema },
       {
-        name: ProductModel.name,
+        name: PRODUCT_MODELS_COLLECTION_NAME,
         schema: ProductModelSchema,
       },
       {
-        name: ProductBrand.name,
+        name: PRODUCT_BRANDS_COLLECTION_NAME,
         schema: ProductBrandSchema,
       },
     ]),

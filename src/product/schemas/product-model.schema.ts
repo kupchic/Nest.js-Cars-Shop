@@ -13,7 +13,10 @@ const productModelOptions: ToObjectOptions = {
   },
 };
 
+export const PRODUCT_MODELS_COLLECTION_NAME: string = 'productModelsCollection';
+
 @Schema({
+  collection: PRODUCT_MODELS_COLLECTION_NAME,
   versionKey: false,
   toJSON: productModelOptions,
 })

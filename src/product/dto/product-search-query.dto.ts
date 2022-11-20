@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsEnum,
+  IsInt,
   IsNotEmpty,
-  IsNumberString,
   IsOptional,
   IsString,
   Max,
@@ -10,6 +10,7 @@ import {
   ValidateIf,
 } from 'class-validator';
 import { OrderByEnum } from '../../common/model';
+import { Type } from 'class-transformer';
 
 export class ProductSearchQueryDto {
   @ApiProperty({ enum: OrderByEnum })
@@ -23,14 +24,16 @@ export class ProductSearchQueryDto {
   sortBy?: string;
 
   @ApiProperty({ description: 'from 1 to 100. By default is 20' })
-  @IsNumberString()
-  @Max(100)
+  @Type(() => Number)
+  @IsInt()
   @Min(1)
+  @Max(100)
   @IsOptional()
   pageSize?: string;
 
   @ApiProperty()
-  @IsNumberString()
+  @Type(() => Number)
+  @IsInt()
   @Min(1)
   @IsOptional()
   page?: string;

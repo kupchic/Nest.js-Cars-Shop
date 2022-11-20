@@ -13,11 +13,13 @@ const carOptions: ToObjectOptions = {
     return car;
   },
 };
+export const PRODUCTS_COLLECTION_NAME: string = 'productsCollection';
 
 @Schema({
   timestamps: true,
   versionKey: false,
   toJSON: carOptions,
+  collection: PRODUCTS_COLLECTION_NAME,
 })
 export class Product {
   @Prop({

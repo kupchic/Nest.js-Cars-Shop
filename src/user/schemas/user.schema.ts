@@ -13,7 +13,13 @@ const userOptions: ToObjectOptions = {
   },
 };
 
-@Schema({ toJSON: userOptions })
+export const USERS_COLLECTION_NAME: string = 'usersCollection';
+
+@Schema({
+  collection: USERS_COLLECTION_NAME,
+  toJSON: userOptions,
+  versionKey: false,
+})
 export class User {
   @Prop({ required: true, type: 'String' })
   firstName: string;

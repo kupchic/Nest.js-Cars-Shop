@@ -9,7 +9,10 @@ const productBrandOptions: ToObjectOptions = {
   },
 };
 
+export const PRODUCT_BRANDS_COLLECTION_NAME: string = 'productBrandsCollection';
+
 @Schema({
+  collection: PRODUCT_BRANDS_COLLECTION_NAME,
   versionKey: false,
   toJSON: productBrandOptions,
 })

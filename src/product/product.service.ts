@@ -4,12 +4,15 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model } from 'mongoose';
+import mongoose, { FilterQuery, Model } from 'mongoose';
 import {
   Product,
+  PRODUCT_BRANDS_COLLECTION_NAME,
+  PRODUCT_MODELS_COLLECTION_NAME,
   ProductBrand,
   ProductDocument,
   ProductModel,
+  PRODUCTS_COLLECTION_NAME,
 } from './schemas';
 import { CreateProductDto, ProductFiltersDto, UpdateProductDto } from './dto';
 import { ProductModelService } from './product-model/product-model.service';
@@ -20,7 +23,8 @@ import { ProductSearchQueryDto } from './dto/product-search-query.dto';
 @Injectable()
 export class ProductService {
   constructor(
-    @InjectModel(Product.name) private productModel: Model<ProductDocument>,
+    @InjectModel(PRODUCTS_COLLECTION_NAME)
+    private productModel: Model<ProductDocument>,
     private productModelService: ProductModelService,
     private productBrandService: ProductBrandService,
   ) {}
@@ -30,18 +34,40 @@ export class ProductService {
     filters?: ProductFiltersDto,
   ): Promise<Product[]> {
     try {
-      const match: FilterQuery<Product> = {};
+      const filterMatch: FilterQuery<Product> = { $and: [] };
+      const searchMatch: FilterQuery<Product> = { $or: [] };
       const sort: KeyValuePairs<any> = {};
+      if (filters) {
+        if (filters.productBrand) {
+          filterMatch.$and.push({
+            productBrand: new mongoose.Types.ObjectId(filters.productBrand),
+          });
+        }
+        if (filters.productModel) {
+          filterMatch.$and.push({
+            productModel: new mongoose.Types.ObjectId(filters.productModel),
+          });
+        }
+        if (filters.priceTo || filters.priceFrom) {
+          filterMatch.$and.push({
+            price: {
+              $gte: filters.priceFrom || 0,
+              $lte: filters.priceTo || Infinity,
+            },
+          });
+        }
+      }
       if (query?.sortBy && query?.orderBy) {
         sort[query.sortBy] = query.orderBy === OrderByEnum.DESC ? -1 : 1;
       } else {
         sort.createdAt = -1;
       }
+      const page: number = parseInt(query?.page || '1') - 1;
       const limit: number = parseInt(query?.pageSize || '20');
-      const skip: number = (parseInt(query?.page || '1') - 1) * limit;
+      const skip: number = page * limit;
       if (query?.search) {
-        const reg: RegExp = new RegExp(query.search, 'i');
-        match['$or'] = [
+        const reg: RegExp = new RegExp(query.search.split(' ').join('|'), 'i');
+        searchMatch['$or'] = [
           {
             description: reg,
           },
@@ -53,10 +79,21 @@ export class ProductService {
           },
         ];
       }
+
+      if (!filterMatch.$and.length) {
+        delete filterMatch.$and;
+      }
+      if (!searchMatch.$or.length) {
+        delete searchMatch.$or;
+      }
+
       return await this.productModel.aggregate<Product>([
         {
+          $match: filterMatch,
+        },
+        {
           $lookup: {
-            from: 'productbrands',
+            from: PRODUCT_BRANDS_COLLECTION_NAME,
             localField: 'productBrand',
             foreignField: '_id',
             as: 'productBrand',
@@ -78,7 +115,7 @@ export class ProductService {
         },
         {
           $lookup: {
-            from: 'productmodels',
+            from: PRODUCT_MODELS_COLLECTION_NAME,
             localField: 'productModel',
             foreignField: '_id',
             as: 'productModel',
@@ -95,6 +132,13 @@ export class ProductService {
                   _id: 0,
                 },
               },
+              {
+                $match: {
+                  bodyType: {
+                    [filters.bodyType ? '$eq' : '$ne']: filters.bodyType,
+                  },
+                },
+              },
             ],
           },
         },
@@ -109,7 +153,7 @@ export class ProductService {
           },
         },
         {
-          $match: match,
+          $match: searchMatch,
         },
         {
           $skip: skip,
@@ -129,6 +173,23 @@ export class ProductService {
         },
         {
           $unset: '_id', // or $project
+        },
+        {
+          $facet: {
+            data: [],
+            pagination: [
+              {
+                $count: 'totalRecords',
+              },
+            ],
+          },
+        },
+
+        {
+          $addFields: {
+            'pagination.page': page + 1,
+            'pagination.pageSize': limit,
+          },
         },
       ]);
     } catch (e) {

@@ -18,7 +18,9 @@ import { MongoIdStringPipe } from './common/pipes';
       envFilePath: '.env',
       isGlobal: true,
     }),
-    MongooseModule.forRoot('mongodb://localhost:8007'),
+    MongooseModule.forRoot('mongodb://localhost:8007', {
+      dbName: 'CarsShop',
+    }),
     AdminModule,
     CustomerModule,
     ManagerModule,
