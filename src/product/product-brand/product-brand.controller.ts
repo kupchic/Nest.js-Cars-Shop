@@ -17,6 +17,7 @@ import { MongoIdStringPipe } from '../../common/pipes';
 import { Roles } from '../../common/decorators';
 import { UserRoles } from '../../user/model/enum/user-roles.enum';
 import { CreateProductBrandDto, UpdateProductBrandDto } from '../dto';
+import { IProductBrand } from '../model';
 
 @ApiTags('Product Brand Module')
 @Controller('products/brands')
@@ -28,16 +29,16 @@ export class ProductBrandController {
   ) {}
 
   @ApiResponse({
-    type: ProductBrand,
+    type: IProductBrand,
     isArray: true,
   })
-  @Get('')
+  @Get()
   getAllBrands(): Promise<ProductBrand[]> {
     return this.productBrandService.getAllBrands();
   }
 
   @ApiResponse({
-    type: ProductBrand,
+    type: IProductBrand,
   })
   @Get(':id')
   async getBrand(
@@ -51,16 +52,16 @@ export class ProductBrandController {
   }
 
   @ApiResponse({
-    type: ProductBrand,
+    type: IProductBrand,
   })
   @Roles(UserRoles.MANAGER)
-  @Post('')
+  @Post()
   createBrand(@Body() createDto: CreateProductBrandDto): Promise<ProductBrand> {
     return this.productBrandService.create(createDto);
   }
 
   @ApiResponse({
-    type: ProductBrand,
+    type: IProductBrand,
   })
   @Roles(UserRoles.MANAGER)
   @Put(':id')

@@ -17,6 +17,7 @@ import { Roles } from '../../common/decorators';
 import { UserRoles } from '../../user/model/enum/user-roles.enum';
 import { UpdateProductModelDto } from '../dto/update-product-model.dto';
 import { CreateProductModelDto } from '../dto';
+import { IProductModel } from '../model';
 
 @ApiTags('Product Models Module')
 @Controller('products/models')
@@ -27,16 +28,16 @@ export class ProductModelController {
   ) {}
 
   @ApiResponse({
-    type: ProductModel,
+    type: IProductModel,
     isArray: true,
   })
-  @Get('')
+  @Get()
   getAllModels(): Promise<ProductModel[]> {
     return this.productModelsService.getAllModels();
   }
 
   @ApiResponse({
-    type: ProductModel,
+    type: IProductModel,
   })
   @Get(':id')
   async getModel(
@@ -50,7 +51,7 @@ export class ProductModelController {
   }
 
   @ApiResponse({
-    type: ProductModel,
+    type: IProductModel,
   })
   @Roles(UserRoles.ADMIN)
   @Post('')
@@ -59,7 +60,7 @@ export class ProductModelController {
   }
 
   @ApiResponse({
-    type: ProductModel,
+    type: IProductModel,
   })
   @Roles(UserRoles.MANAGER)
   @Put(':id')

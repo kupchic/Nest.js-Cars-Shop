@@ -1,9 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document, ToObjectOptions } from 'mongoose';
-import { BodyTypes } from '../model/enums/body-types.enum';
-import { EngineTypes } from '../model/enums/engine-types.enum';
-import { DriveTypes } from '../model/enums/drive-types.enum';
-import { TransmissionTypes } from '../model/enums/transmission-types.enum';
+import {
+  BodyTypes,
+  DriveTypes,
+  EngineTypes,
+  TransmissionTypes,
+} from '../model';
 
 const productModelOptions: ToObjectOptions = {
   virtuals: true,

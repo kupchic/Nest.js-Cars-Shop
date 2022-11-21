@@ -19,6 +19,7 @@ import { ProductModelService } from './product-model/product-model.service';
 import { ProductBrandService } from './product-brand/product-brand.service';
 import { KeyValuePairs, OrderByEnum } from '../common/model';
 import { ProductSearchQueryDto } from './dto/product-search-query.dto';
+import { IProductResponse } from './model';
 
 @Injectable()
 export class ProductService {
@@ -32,7 +33,7 @@ export class ProductService {
   async search(
     query?: ProductSearchQueryDto,
     filters?: ProductFiltersDto,
-  ): Promise<Product[]> {
+  ): Promise<IProductResponse> {
     try {
       const filterMatch: FilterQuery<Product> = { $and: [] };
       const searchMatch: FilterQuery<Product> = { $or: [] };
@@ -87,111 +88,123 @@ export class ProductService {
         delete searchMatch.$or;
       }
 
-      return await this.productModel.aggregate<Product>([
-        {
-          $match: filterMatch,
-        },
-        {
-          $lookup: {
-            from: PRODUCT_BRANDS_COLLECTION_NAME,
-            localField: 'productBrand',
-            foreignField: '_id',
-            as: 'productBrand',
-            pipeline: [
-              {
-                $addFields: {
-                  id: {
-                    $toString: '$_id',
+      return await this.productModel
+        .aggregate<any>([
+          {
+            $match: filterMatch,
+          },
+          {
+            $lookup: {
+              from: PRODUCT_BRANDS_COLLECTION_NAME,
+              localField: 'productBrand',
+              foreignField: '_id',
+              as: 'productBrand',
+              pipeline: [
+                {
+                  $addFields: {
+                    id: {
+                      $toString: '$_id',
+                    },
                   },
                 },
-              },
-              {
-                $project: {
-                  _id: 0,
-                },
-              },
-            ],
-          },
-        },
-        {
-          $lookup: {
-            from: PRODUCT_MODELS_COLLECTION_NAME,
-            localField: 'productModel',
-            foreignField: '_id',
-            as: 'productModel',
-            pipeline: [
-              {
-                $addFields: {
-                  id: {
-                    $toString: '$_id',
+                {
+                  $project: {
+                    _id: 0,
                   },
                 },
-              },
-              {
-                $project: {
-                  _id: 0,
-                },
-              },
-              {
-                $match: {
-                  bodyType: {
-                    [filters.bodyType ? '$eq' : '$ne']: filters.bodyType,
-                  },
-                },
-              },
-            ],
-          },
-        },
-        {
-          $unwind: {
-            path: '$productBrand',
-          },
-        },
-        {
-          $unwind: {
-            path: '$productModel',
-          },
-        },
-        {
-          $match: searchMatch,
-        },
-        {
-          $skip: skip,
-        },
-        {
-          $limit: limit,
-        },
-        {
-          $sort: sort,
-        },
-        {
-          $addFields: {
-            id: {
-              $toString: '$_id',
+              ],
             },
           },
-        },
-        {
-          $unset: '_id', // or $project
-        },
-        {
-          $facet: {
-            data: [],
-            pagination: [
-              {
-                $count: 'totalRecords',
+          {
+            $lookup: {
+              from: PRODUCT_MODELS_COLLECTION_NAME,
+              localField: 'productModel',
+              foreignField: '_id',
+              as: 'productModel',
+              pipeline: [
+                {
+                  $addFields: {
+                    id: {
+                      $toString: '$_id',
+                    },
+                  },
+                },
+                {
+                  $project: {
+                    _id: 0,
+                  },
+                },
+                {
+                  $match: {
+                    bodyType: {
+                      [filters.bodyType ? '$eq' : '$ne']: filters.bodyType,
+                    },
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: {
+              path: '$productBrand',
+            },
+          },
+          {
+            $unwind: {
+              path: '$productModel',
+            },
+          },
+          {
+            $match: searchMatch,
+          },
+          {
+            $skip: skip,
+          },
+          {
+            $limit: limit,
+          },
+          {
+            $sort: sort,
+          },
+          {
+            $addFields: {
+              id: {
+                $toString: '$_id',
               },
-            ],
+            },
           },
-        },
-
-        {
-          $addFields: {
-            'pagination.page': page + 1,
-            'pagination.pageSize': limit,
+          {
+            $unset: '_id', // or $project
           },
-        },
-      ]);
+          {
+            $facet: {
+              pagination: [
+                {
+                  $count: 'totalRecords',
+                },
+              ],
+              data: [],
+            },
+          },
+          {
+            $set: {
+              pagination: { $first: '$pagination' },
+            },
+          },
+          {
+            $addFields: {
+              'pagination.page': page + 1,
+              'pagination.pageSize': limit,
+              'pagination.pagesCount': {
+                $ceil: {
+                  $divide: ['$pagination.totalRecords', limit],
+                },
+              },
+            },
+          },
+        ])
+        .exec()
+        .then((res: IProductResponse[]) => res[0]);
     } catch (e) {
       throw e;
     }
