@@ -58,8 +58,8 @@ export class ProductService {
           });
         }
       }
-      if (query?.sortBy && query?.orderBy) {
-        sort[query.sortBy] = query.orderBy === OrderByEnum.DESC ? -1 : 1;
+      if (query?.sortBy) {
+        sort[query.sortBy] = query?.orderBy === OrderByEnum.DESC ? -1 : 1;
       } else {
         sort.createdAt = -1;
       }
