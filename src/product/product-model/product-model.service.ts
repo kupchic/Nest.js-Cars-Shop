@@ -16,14 +16,6 @@ export class ProductModelService {
     private productModelsModel: Model<ProductModelDocument>,
   ) {}
 
-  async findByName(name: string): Promise<ProductModel> {
-    try {
-      return await this.productModelsModel.findOne({ name }).exec();
-    } catch (e) {
-      throw new BadRequestException(e.message);
-    }
-  }
-
   async create(dto: CreateProductModelDto): Promise<ProductModel> {
     try {
       return await this.productModelsModel.create(dto);

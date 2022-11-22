@@ -11,7 +11,6 @@ import {
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ProductBrand } from '../schemas';
 import { ProductService } from '../product.service';
-import { ProductModelService } from '../product-model/product-model.service';
 import { ProductBrandService } from './product-brand.service';
 import { MongoIdStringPipe } from '../../common/pipes';
 import { Roles } from '../../common/decorators';
@@ -24,7 +23,6 @@ import { IProductBrand } from '../model';
 export class ProductBrandController {
   constructor(
     private productService: ProductService,
-    private productModelsService: ProductModelService,
     private productBrandService: ProductBrandService,
   ) {}
 
@@ -46,7 +44,7 @@ export class ProductBrandController {
   ): Promise<ProductBrand> {
     const brand: ProductBrand = await this.productBrandService.getBrand(id);
     if (!brand) {
-      throw new NotFoundException('Product not Found');
+      throw new NotFoundException('Brand not Found');
     }
     return brand;
   }

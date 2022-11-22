@@ -73,7 +73,7 @@ export class ProductModelController {
       toUpdate,
     );
     if (!model) {
-      throw new NotFoundException('Brand not Found');
+      throw new NotFoundException('Model not found');
     }
     return model;
   }

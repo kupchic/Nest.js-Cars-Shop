@@ -1,38 +1,31 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ProductModelService } from './product-model.service';
 import { getModelToken } from '@nestjs/mongoose';
 import {
-  PRODUCT_MODELS_COLLECTION_NAME,
-  ProductModel,
+  PRODUCT_BRANDS_COLLECTION_NAME,
+  ProductBrand,
   ProductModelDocument,
 } from '../schemas';
-import { BodyTypes, EngineTypes, TransmissionTypes } from '../model';
 import { Model } from 'mongoose';
-import { CreateProductModelDto } from '../dto';
 import { BadRequestException } from '@nestjs/common';
+import { ProductBrandService } from './product-brand.service';
 import SpyInstance = jest.SpyInstance;
 
-describe('ProductModelService', () => {
-  let service: ProductModelService;
+describe('ProductBrandService', () => {
+  let service: ProductBrandService;
   let mockModel: Model<ProductModelDocument>;
-  const mockProductModel: ProductModel = {
+  const mockProductBrand: ProductBrand = {
     id: 'id',
-    bodyType: BodyTypes.MINIVAN,
-    engineType: EngineTypes.W_TYPE,
-    engineSize: 2,
-    modelName: 'name',
-    transmissionType: TransmissionTypes.AUTOMATIC,
-    drive: '2',
+    brandName: 'brand',
+    brandCountry: 'country',
   };
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        ProductModelService,
+        ProductBrandService,
         {
-          provide: getModelToken(PRODUCT_MODELS_COLLECTION_NAME),
+          provide: getModelToken(PRODUCT_BRANDS_COLLECTION_NAME),
           useValue: {
             find: jest.fn(),
-            findOne: jest.fn(),
             findById: jest.fn(),
             findByIdAndUpdate: jest.fn(),
             findByIdAndDelete: jest.fn(),
@@ -42,8 +35,8 @@ describe('ProductModelService', () => {
       ],
     }).compile();
 
-    service = module.get<ProductModelService>(ProductModelService);
-    mockModel = module.get(getModelToken(PRODUCT_MODELS_COLLECTION_NAME));
+    service = module.get<ProductBrandService>(ProductBrandService);
+    mockModel = module.get(getModelToken(PRODUCT_BRANDS_COLLECTION_NAME));
   });
 
   it('should be defined', () => {
@@ -51,21 +44,19 @@ describe('ProductModelService', () => {
   });
 
   describe('create', () => {
-    it('should call create model', async () => {
-      const { id, ...dto } = mockProductModel;
+    it('should call create a brand', async () => {
+      const { id, ...dto } = mockProductBrand;
       const spy: SpyInstance = jest
         .spyOn(mockModel, 'create')
-        .mockResolvedValueOnce(mockProductModel as never);
+        .mockResolvedValueOnce(mockProductBrand as never);
       // when
-      const result: ProductModel = await service.create(
-        dto as CreateProductModelDto,
-      );
+      const result: ProductBrand = await service.create(dto);
       // then
-      expect(result).toEqual(mockProductModel);
+      expect(result).toEqual(mockProductBrand);
       expect(spy).nthCalledWith(1, dto);
     });
     it('should catch error', async () => {
-      const { id, ...dto } = mockProductModel;
+      const { id, ...dto } = mockProductBrand;
       const expectedError: BadRequestException = new BadRequestException(
         'error',
       );
@@ -74,21 +65,19 @@ describe('ProductModelService', () => {
       });
       // when
       //then
-      await expect(
-        service.create(dto as CreateProductModelDto),
-      ).rejects.toEqual(expectedError);
+      await expect(service.create(dto)).rejects.toEqual(expectedError);
     });
   });
 
-  describe('getAllModels', () => {
+  describe('getAllBrands', () => {
     it('should call find with exec()', async () => {
       const spy: SpyInstance = jest.spyOn(mockModel, 'find').mockReturnValue({
-        exec: () => Promise.resolve([mockProductModel]),
+        exec: () => Promise.resolve([mockProductBrand]),
       } as never);
       // when
-      const result: ProductModel[] = await service.getAllModels();
+      const result: ProductBrand[] = await service.getAllBrands();
       // then
-      expect(result).toEqual([mockProductModel]);
+      expect(result).toEqual([mockProductBrand]);
       expect(spy).nthCalledWith(1);
     });
     it('should catch error', async () => {
@@ -100,21 +89,21 @@ describe('ProductModelService', () => {
       });
       // when
       //then
-      await expect(service.getAllModels()).rejects.toEqual(expectedError);
+      await expect(service.getAllBrands()).rejects.toEqual(expectedError);
     });
   });
-  describe('getModel', () => {
+  describe('getBrand', () => {
     it('should call findByID with exec()', async () => {
       const spy: SpyInstance = jest
         .spyOn(mockModel, 'findById')
         .mockReturnValue({
-          exec: () => Promise.resolve(mockProductModel),
+          exec: () => Promise.resolve(mockProductBrand),
         } as never);
       // when
-      const result: ProductModel = await service.getModel(mockProductModel.id);
+      const result: ProductBrand = await service.getBrand(mockProductBrand.id);
       // then
-      expect(result).toEqual(mockProductModel);
-      expect(spy).nthCalledWith(1, mockProductModel.id);
+      expect(result).toEqual(mockProductBrand);
+      expect(spy).nthCalledWith(1, mockProductBrand.id);
     });
     it('should catch error', async () => {
       const expectedError: BadRequestException = new BadRequestException(
@@ -125,23 +114,23 @@ describe('ProductModelService', () => {
       });
       // when
       //then
-      await expect(service.getModel('2')).rejects.toEqual(expectedError);
+      await expect(service.getBrand('2')).rejects.toEqual(expectedError);
     });
   });
-  describe('deleteModel', () => {
+  describe('deleteBrand', () => {
     it('should call findByIDAndDelete with exec()', async () => {
       const spy: SpyInstance = jest
         .spyOn(mockModel, 'findByIdAndDelete')
         .mockReturnValue({
-          exec: () => Promise.resolve(mockProductModel),
+          exec: () => Promise.resolve(mockProductBrand),
         } as never);
       // when
-      const result: ProductModel = await service.deleteModel(
-        mockProductModel.id,
+      const result: ProductBrand = await service.deleteBrand(
+        mockProductBrand.id,
       );
       // then
-      expect(result).toEqual(mockProductModel);
-      expect(spy).nthCalledWith(1, mockProductModel.id);
+      expect(result).toEqual(mockProductBrand);
+      expect(spy).nthCalledWith(1, mockProductBrand.id);
     });
     it('should catch error', async () => {
       const expectedError: BadRequestException = new BadRequestException(
@@ -152,22 +141,22 @@ describe('ProductModelService', () => {
       });
       // when
       //then
-      await expect(service.deleteModel('2')).rejects.toEqual(expectedError);
+      await expect(service.deleteBrand('2')).rejects.toEqual(expectedError);
     });
   });
-  describe('updateModel', () => {
+  describe('updateBrand', () => {
     it('should call findByIdAndUpdate', async () => {
-      const { id, ...dto } = mockProductModel;
+      const { id, ...dto } = mockProductBrand;
       const spy: SpyInstance = jest
         .spyOn(mockModel, 'findByIdAndUpdate')
-        .mockResolvedValueOnce(mockProductModel as never);
+        .mockResolvedValueOnce(mockProductBrand as never);
       // when
-      const result: ProductModel = await service.updateModel(
-        mockProductModel.id,
-        dto as CreateProductModelDto,
+      const result: ProductBrand = await service.updateBrand(
+        mockProductBrand.id,
+        dto,
       );
       // then
-      expect(result).toEqual(mockProductModel);
+      expect(result).toEqual(mockProductBrand);
       expect(spy).nthCalledWith(1, id, dto, { new: true });
     });
     it('should catch error', async () => {
@@ -179,7 +168,7 @@ describe('ProductModelService', () => {
       });
       // when
       //then
-      await expect(service.updateModel('1', null)).rejects.toEqual(
+      await expect(service.updateBrand('1', null)).rejects.toEqual(
         expectedError,
       );
     });

@@ -137,7 +137,7 @@ export class ProductService {
                 {
                   $match: {
                     bodyType: {
-                      [filters.bodyType ? '$eq' : '$ne']: filters.bodyType,
+                      [filters?.bodyType ? '$eq' : '$ne']: filters?.bodyType,
                     },
                   },
                 },

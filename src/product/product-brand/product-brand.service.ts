@@ -15,14 +15,6 @@ export class ProductBrandService {
     private productBrandModel: Model<ProductBrandDocument>,
   ) {}
 
-  async findByName(name: string): Promise<ProductBrand> {
-    try {
-      return await this.productBrandModel.findOne({ name }).exec();
-    } catch (e) {
-      throw new BadRequestException(e.message);
-    }
-  }
-
   async create(dto: CreateProductBrandDto): Promise<ProductBrand> {
     try {
       return await this.productBrandModel.create(dto);
