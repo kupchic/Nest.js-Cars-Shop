@@ -216,7 +216,7 @@ export class ProductService {
         createDto.productModel,
       );
       if (!model) {
-        throw new BadRequestException(
+        throw new Error(
           'Not Possible to create a product. Model with such id is not found.',
         );
       }
@@ -224,7 +224,7 @@ export class ProductService {
         createDto.productBrand,
       );
       if (!brand) {
-        throw new BadRequestException(
+        throw new Error(
           'Not Possible to create a product. Brand with such id is not found.',
         );
       }
@@ -234,7 +234,7 @@ export class ProductService {
         productBrand: brand,
       });
     } catch (e) {
-      throw e;
+      throw new BadRequestException(e.message);
     }
   }
 
@@ -248,15 +248,15 @@ export class ProductService {
         .populate(this._populateFields)
         .exec();
     } catch (e) {
-      new BadRequestException(e.message);
+      throw new BadRequestException(e.message);
     }
   }
 
   async deleteProduct(id: string): Promise<Product> {
     try {
-      return this.productModel.findByIdAndDelete(id);
+      return this.productModel.findByIdAndDelete(id).exec();
     } catch (e) {
-      new BadRequestException(e.message);
+      throw new BadRequestException(e.message);
     }
   }
 
@@ -277,13 +277,13 @@ export class ProductService {
         productModel: id,
       });
       if (product) {
-        throw new ConflictException(
+        throw new Error(
           'This model is already used in the catalogs, deleting is impossible',
         );
       }
       return await this.productModelService.deleteModel(id);
     } catch (e) {
-      throw e;
+      throw new ConflictException(e.message);
     }
   }
 
@@ -293,13 +293,13 @@ export class ProductService {
         productBrand: id,
       });
       if (product) {
-        throw new ConflictException(
+        throw new Error(
           'This brand is already used in the catalogs, deleting is impossible',
         );
       }
       return await this.productBrandService.deleteBrand(id);
     } catch (e) {
-      throw e;
+      throw new ConflictException(e.message);
     }
   }
 
