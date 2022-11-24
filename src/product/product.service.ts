@@ -17,9 +17,8 @@ import {
 import { CreateProductDto, ProductFiltersDto, UpdateProductDto } from './dto';
 import { ProductModelService } from './product-model/product-model.service';
 import { ProductBrandService } from './product-brand/product-brand.service';
-import { KeyValuePairs, OrderByEnum } from '../common/model';
-import { ProductSearchQueryDto } from './dto/product-search-query.dto';
-import { IProductResponse } from './model';
+import { KeyValuePairs, OrderByEnum, SearchQueryDto } from '../common/model';
+import { IPaginatedProductResponse } from './model';
 
 @Injectable()
 export class ProductService {
@@ -31,9 +30,9 @@ export class ProductService {
   ) {}
 
   async search(
-    query?: ProductSearchQueryDto,
+    query?: SearchQueryDto,
     filters?: ProductFiltersDto,
-  ): Promise<IProductResponse> {
+  ): Promise<IPaginatedProductResponse> {
     try {
       const filterMatch: FilterQuery<Product> = { $and: [] };
       const searchMatch: FilterQuery<Product> = { $or: [] };
@@ -204,7 +203,7 @@ export class ProductService {
           },
         ])
         .exec()
-        .then((res: IProductResponse[]) => res[0]);
+        .then((res: IPaginatedProductResponse[]) => res[0]);
     } catch (e) {
       throw e;
     }

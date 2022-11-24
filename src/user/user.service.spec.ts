@@ -102,7 +102,7 @@ describe('UserService', () => {
         .spyOn(mockUserModel, 'find')
         .mockResolvedValueOnce([mockUser]);
       // when
-      const result: User[] = await service.getAllUsers();
+      const result: User[] = await service.getUsers();
       //then
       expect(result).toEqual([mockUser]);
       expect(findSpy).nthCalledWith(1, {});
@@ -115,7 +115,7 @@ describe('UserService', () => {
       });
       // when
       //then
-      await expect(service.getAllUsers()).rejects.toEqual(error);
+      await expect(service.getUsers()).rejects.toEqual(error);
     });
   });
 

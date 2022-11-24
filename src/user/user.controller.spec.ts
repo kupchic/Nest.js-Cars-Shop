@@ -44,10 +44,10 @@ describe('UserController', () => {
     it('should do getAll request', async () => {
       // given
       const spy: SpyInstance = jest
-        .spyOn(userService, 'getAllUsers')
+        .spyOn(userService, 'getUsers')
         .mockResolvedValueOnce([mockUser]);
       //when
-      const result: User[] = await controller.getAll();
+      const result: User[] = await controller.getUsers();
       // then
       expect(result).toEqual([mockUser]);
       expect(spy).toHaveBeenCalledTimes(1);

@@ -7,7 +7,6 @@ import {
   Length,
   Matches,
 } from 'class-validator';
-import { IsSameAs } from '../../common/validators';
 import { ResetPassDto } from './reset-pass.dto';
 
 export class RegisterDto extends ResetPassDto {
@@ -39,10 +38,4 @@ export class RegisterDto extends ResetPassDto {
       'Wrong phone number. Phone number should fit the pattern well: 80 17|29|33|44 1234567',
   })
   readonly phone: string;
-
-  @ApiProperty({ description: 'The same as password field' })
-  @IsSameAs('password', {
-    message: 'password and confirmPassword fields are not same',
-  })
-  readonly confirmPassword: string;
 }

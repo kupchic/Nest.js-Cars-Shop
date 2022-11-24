@@ -1,26 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IPaginatedResponse } from '../../common/model';
 import { IProduct } from './product';
 
-export class IPagination {
-  @ApiProperty()
-  totalRecords: number;
-
-  @ApiProperty()
-  page: number;
-
-  @ApiProperty()
-  pageSize: number;
-
-  @ApiProperty()
-  pageCount: number;
-}
-
-export class IProductResponse {
-  @ApiProperty({
-    type: IPagination,
-  })
-  pagination: IPagination;
-
+export class IPaginatedProductResponse extends IPaginatedResponse<IProduct> {
   @ApiProperty({
     type: IProduct,
     isArray: true,
