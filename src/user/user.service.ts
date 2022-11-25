@@ -34,13 +34,15 @@ export class UserService {
     }
   }
 
-  async getUsers(query?: SearchQueryDto | undefined): Promise<any> {
+  async getUsers(
+    query?: SearchQueryDto | undefined,
+  ): Promise<IPaginatedResponse<User>> {
     try {
       const pageSize: number = parseInt(query?.pageSize || '20');
       const page: number = parseInt(query?.page || '1') - 1;
       const skip: number = page * pageSize;
       const match: FilterQuery<User> = {};
-      if (query.search) {
+      if (query?.search) {
         const reg: RegExp = new RegExp(query.search.split(' ').join('|'), 'i');
         match.$or = [
           {
