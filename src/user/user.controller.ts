@@ -18,7 +18,7 @@ import { UserDto } from './dto/user-response.dto';
 import { Roles } from '../common/decorators';
 import { MongoIdStringPipe } from '../common/pipes';
 import { CreateUserDto, UpdateUserDto } from './dto/create-user.dto';
-import { SearchQueryDto } from '../common/model';
+import { IPaginatedResponse, SearchQueryDto } from '../common/model';
 import { IPaginatedUsersResponse } from './model/users-paginated-respose';
 
 @ApiTags('Users Module')
@@ -31,7 +31,9 @@ export class UserController {
   })
   @Roles(UserRoles.ADMIN)
   @Get()
-  getUsers(@Query() query?: SearchQueryDto | undefined): Promise<User[]> {
+  getUsers(
+    @Query() query?: SearchQueryDto | undefined,
+  ): Promise<IPaginatedResponse<User>> {
     return this.userService.getUsers(query);
   }
 
@@ -63,7 +65,7 @@ export class UserController {
     try {
       const deletedCount: number = await this.userService.deleteMany(arr);
       if (deletedCount === 0) {
-        return 'No Users have been deleted';
+        throw new NotFoundException('No Users have been deleted');
       }
       return deletedCount === arr.length
         ? `All ${deletedCount} users have been successfully deleted`
