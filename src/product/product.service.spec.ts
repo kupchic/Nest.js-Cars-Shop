@@ -358,7 +358,7 @@ describe('ProductService', () => {
         'some error',
       );
       jest.spyOn(mockModel, 'findById').mockImplementation(() => {
-        throw new Error(expectedError.message);
+        throw expectedError;
       });
       // then
       await expect(service.getById('id')).rejects.toEqual(expectedError);

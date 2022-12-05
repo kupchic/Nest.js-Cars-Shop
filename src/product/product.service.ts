@@ -216,7 +216,7 @@ export class ProductService {
         createDto.productModel,
       );
       if (!model) {
-        throw new Error(
+        throw new BadRequestException(
           'Not Possible to create a product. Model with such id is not found.',
         );
       }
@@ -224,7 +224,7 @@ export class ProductService {
         createDto.productBrand,
       );
       if (!brand) {
-        throw new Error(
+        throw new BadRequestException(
           'Not Possible to create a product. Brand with such id is not found.',
         );
       }
@@ -234,7 +234,7 @@ export class ProductService {
         productBrand: brand,
       });
     } catch (e) {
-      throw new BadRequestException(e.message);
+      throw e;
     }
   }
 
@@ -248,7 +248,7 @@ export class ProductService {
         .populate(this._populateFields)
         .exec();
     } catch (e) {
-      throw new BadRequestException(e.message);
+      throw e;
     }
   }
 
@@ -256,7 +256,7 @@ export class ProductService {
     try {
       return this.productModel.findByIdAndDelete(id).exec();
     } catch (e) {
-      throw new BadRequestException(e.message);
+      throw e;
     }
   }
 
@@ -267,7 +267,7 @@ export class ProductService {
         .populate(this._populateFields)
         .exec();
     } catch (e) {
-      throw new BadRequestException(e.message);
+      throw e;
     }
   }
 
@@ -277,13 +277,13 @@ export class ProductService {
         productModel: id,
       });
       if (product) {
-        throw new Error(
+        throw new ConflictException(
           'This model is already used in the catalogs, deleting is impossible',
         );
       }
       return await this.productModelService.deleteModel(id);
     } catch (e) {
-      throw new ConflictException(e.message);
+      throw e;
     }
   }
 
@@ -293,13 +293,13 @@ export class ProductService {
         productBrand: id,
       });
       if (product) {
-        throw new Error(
+        throw new ConflictException(
           'This brand is already used in the catalogs, deleting is impossible',
         );
       }
       return await this.productBrandService.deleteBrand(id);
     } catch (e) {
-      throw new ConflictException(e.message);
+      throw e;
     }
   }
 
