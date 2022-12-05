@@ -11,6 +11,7 @@ import { APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guards';
 import { MailModule } from './mail/mail.module';
 import { MongoIdStringPipe } from './common/pipes';
+import 'dotenv/config';
 
 @Module({
   imports: [
@@ -18,7 +19,7 @@ import { MongoIdStringPipe } from './common/pipes';
       envFilePath: '.env',
       isGlobal: true,
     }),
-    MongooseModule.forRoot('mongodb://localhost:8007', {
+    MongooseModule.forRoot(process.env.DB_HOST, {
       dbName: 'CarsShop',
     }),
     AdminModule,
