@@ -11,7 +11,15 @@ import {
   Max,
   Min,
 } from 'class-validator';
-import { ProductColors } from '../model/enums/product-colors.enum';
+import {
+  PRODUCT_PRICE_MAX_VALUE,
+  PRODUCT_PRICE_MIN_VALUE,
+  PRODUCT_WARRANTY_MAX_VALUE,
+  PRODUCT_WARRANTY_MIN_VALUE,
+  PRODUCT_YEAR_OF_ISSUE_MAX_VALUE,
+  PRODUCT_YEAR_OF_ISSUE_MIN_VALUE,
+  ProductColors,
+} from '../model';
 
 export class CreateProductDto {
   @ApiProperty({ description: 'Id of some of existed brand' })
@@ -27,8 +35,8 @@ export class CreateProductDto {
       'Should be selected within the range from 1900 till current year.',
   })
   @IsInt()
-  @Min(1900)
-  @Max(new Date().getFullYear())
+  @Min(PRODUCT_YEAR_OF_ISSUE_MIN_VALUE)
+  @Max(PRODUCT_YEAR_OF_ISSUE_MAX_VALUE)
   yearOfIssue: number;
 
   @ApiProperty()
@@ -39,16 +47,16 @@ export class CreateProductDto {
     description: 'Should be selected within the range 100 - 500000 EUR',
   })
   @IsNumber()
-  @Min(100)
-  @Max(500000)
+  @Min(PRODUCT_PRICE_MIN_VALUE)
+  @Max(PRODUCT_PRICE_MAX_VALUE)
   price: number;
 
   @ApiProperty({
     description: 'Should be selected within the range from 10 till 100.',
   })
   @IsInt()
-  @Min(10)
-  @Max(100)
+  @Min(PRODUCT_WARRANTY_MIN_VALUE)
+  @Max(PRODUCT_WARRANTY_MAX_VALUE)
   warranty: number;
 
   @ApiProperty()

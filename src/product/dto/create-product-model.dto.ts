@@ -3,6 +3,8 @@ import {
   BodyTypes,
   DriveTypes,
   EngineTypes,
+  PRODUCT_ENGINE_SIZE_MAX_VALUE,
+  PRODUCT_ENGINE_SIZE_MIN_VALUE,
   TransmissionTypes,
 } from '../model';
 import {
@@ -31,8 +33,8 @@ export class CreateProductModelDto {
 
   @ApiProperty()
   @IsNumber()
-  @Max(8)
-  @Min(1)
+  @Max(PRODUCT_ENGINE_SIZE_MAX_VALUE)
+  @Min(PRODUCT_ENGINE_SIZE_MIN_VALUE)
   engineSize: number;
 
   @ApiProperty({ enum: DriveTypes })

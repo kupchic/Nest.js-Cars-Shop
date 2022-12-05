@@ -4,6 +4,8 @@ import {
   BodyTypes,
   DriveTypes,
   EngineTypes,
+  PRODUCT_ENGINE_SIZE_MAX_VALUE,
+  PRODUCT_ENGINE_SIZE_MIN_VALUE,
   TransmissionTypes,
 } from '../model';
 
@@ -36,8 +38,8 @@ export class ProductModel {
     required: true,
     type: 'Number',
     set: (v: number) => +v.toFixed(1),
-    max: 8,
-    min: 1,
+    max: PRODUCT_ENGINE_SIZE_MAX_VALUE,
+    min: PRODUCT_ENGINE_SIZE_MIN_VALUE,
   })
   engineSize: number;
 

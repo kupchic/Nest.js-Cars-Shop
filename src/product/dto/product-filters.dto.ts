@@ -6,7 +6,7 @@ import {
   IsOptional,
   IsPositive,
 } from 'class-validator';
-import { BodyTypes } from '../model/enums/body-types.enum';
+import { BodyTypes } from '../model';
 
 export class ProductFiltersDto {
   @ApiProperty({ description: 'Id of some of existed brand' })
