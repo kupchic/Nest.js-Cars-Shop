@@ -1,7 +1,15 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document, ToObjectOptions } from 'mongoose';
 import { ProductModel } from './product-model.schema';
-import { ProductColors } from '../model/enums/product-colors.enum';
+import {
+  PRODUCT_PRICE_MAX_VALUE,
+  PRODUCT_PRICE_MIN_VALUE,
+  PRODUCT_WARRANTY_MAX_VALUE,
+  PRODUCT_WARRANTY_MIN_VALUE,
+  PRODUCT_YEAR_OF_ISSUE_MAX_VALUE,
+  PRODUCT_YEAR_OF_ISSUE_MIN_VALUE,
+  ProductColors,
+} from '../model';
 import { ProductBrand } from './product-brand.schema';
 
 const carOptions: ToObjectOptions = {
@@ -39,8 +47,12 @@ export class Product {
   @Prop({
     required: true,
     type: 'Number',
+    min: [
+      PRODUCT_YEAR_OF_ISSUE_MIN_VALUE,
+      'yearOfIssue can not be less than current year',
+    ],
     max: [
-      new Date().getFullYear(),
+      PRODUCT_YEAR_OF_ISSUE_MAX_VALUE,
       'yearOfIssue cant be greater than current year',
     ],
   })
@@ -49,10 +61,20 @@ export class Product {
   @Prop({ required: true, enum: ProductColors })
   color: string;
 
-  @Prop({ required: true, type: 'Number' })
+  @Prop({
+    required: true,
+    type: 'Number',
+    min: PRODUCT_PRICE_MIN_VALUE,
+    max: PRODUCT_PRICE_MAX_VALUE,
+  })
   price: number;
 
-  @Prop({ required: true, type: 'Number', min: 10, max: 100 })
+  @Prop({
+    required: true,
+    type: 'Number',
+    min: PRODUCT_WARRANTY_MIN_VALUE,
+    max: PRODUCT_WARRANTY_MAX_VALUE,
+  })
   warranty: number;
 
   @Prop({ required: false, type: 'String' })

@@ -7,3 +7,7 @@ export * from './enums/drive-types.enum';
 export * from './enums/engine-types.enum';
 export * from './enums/product-colors.enum';
 export * from './enums/transmission-types.enum';
+export * from './consts/product-engine-size';
+export * from './consts/product-warranty-value';
+export * from './consts/product-price-value';
+export * from './consts/product-year-of-issue';
