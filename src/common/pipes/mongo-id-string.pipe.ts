@@ -10,7 +10,6 @@ import mongoose from 'mongoose';
 export class MongoIdStringPipe
   implements PipeTransform<string | string[], string | string[]>
 {
-  //TODO test
   private readonly _isArray: boolean;
 
   constructor(@Optional() isArray: boolean = false) {

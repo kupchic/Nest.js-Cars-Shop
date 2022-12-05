@@ -1,4 +1,4 @@
-import { MongoIdStringPipe } from './mongoIdStringPipe';
+import { MongoIdStringPipe } from './mongo-id-string.pipe';
 import { BadRequestException } from '@nestjs/common';
 
 describe('MongoIdStringPipe', () => {
