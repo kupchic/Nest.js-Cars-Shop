@@ -14,6 +14,7 @@ import { ProductModelService } from './product-model/product-model.service';
 import { ProductBrandService } from './product-brand/product-brand.service';
 import { ProductBrandController } from './product-brand/product-brand.controller';
 import { ProductModelController } from './product-model/product-model.controller';
+import { ProductCartModule } from './product-cart/product-cart.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { ProductModelController } from './product-model/product-model.controller
         schema: ProductBrandSchema,
       },
     ]),
+    ProductCartModule,
   ],
   providers: [ProductService, ProductModelService, ProductBrandService],
   controllers: [
