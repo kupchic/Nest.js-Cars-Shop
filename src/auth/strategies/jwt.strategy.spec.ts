@@ -3,7 +3,7 @@ import { JwtStrategy } from './jwt.strategy';
 import { UserService } from '../../user/user.service';
 import { createMock } from '@golevelup/ts-jest';
 import { User } from '../../user/schemas';
-import { UserJwtPayload } from '../../user/entities/user-jwt-payload';
+import { UserJwtPayload } from '../../user/model/user-jwt-payload';
 import { ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import SpyInstance = jest.SpyInstance;
 

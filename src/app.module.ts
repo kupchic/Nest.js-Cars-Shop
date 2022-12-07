@@ -8,8 +8,10 @@ import { UserModule } from './user/user.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.module';
 import { APP_GUARD, APP_PIPE } from '@nestjs/core';
-import { JwtAuthGuard } from './auth/guards/jwt.guard';
+import { JwtAuthGuard } from './auth/guards';
 import { MailModule } from './mail/mail.module';
+import { MongoIdStringPipe } from './common/pipes';
+import 'dotenv/config';
 
 @Module({
   imports: [
@@ -17,7 +19,9 @@ import { MailModule } from './mail/mail.module';
       envFilePath: '.env',
       isGlobal: true,
     }),
-    MongooseModule.forRoot('mongodb://localhost:8007'),
+    MongooseModule.forRoot(process.env.DB_HOST, {
+      dbName: process.env.DB_NAME,
+    }),
     AdminModule,
     CustomerModule,
     ManagerModule,
@@ -33,12 +37,14 @@ import { MailModule } from './mail/mail.module';
       useValue: new ValidationPipe({
         transform: true,
         whitelist: true,
+        forbidNonWhitelisted: true,
       }),
     },
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
     },
+    MongoIdStringPipe,
   ],
 })
 export class AppModule {}

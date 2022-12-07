@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserController } from './user.controller';
 import { User } from './schemas';
-import { UserRoles } from './entities/user-roles.enum';
+import { UserRoles } from './model/enum/user-roles.enum';
 import { UserService } from './user.service';
 import { NotFoundException } from '@nestjs/common';
 import { createMock } from '@golevelup/ts-jest';

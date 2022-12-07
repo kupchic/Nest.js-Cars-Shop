@@ -13,6 +13,9 @@ async function bootstrap(): Promise<any> {
     .setTitle('Cars Shop')
     .setDescription('The Cars Shop API description')
     .setVersion('1.0')
+    .addBearerAuth({ type: 'apiKey', in: '1 hour' }, 'access_token')
+    .addBearerAuth({ type: 'apiKey', in: '1 week' }, 'refresh_token')
+    .addSecurityRequirements('bearer')
     .build();
   const document: OpenAPIObject = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);

@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from './user.service';
 import { Model } from 'mongoose';
-import { User, UserDocument } from './schemas';
+import { User, UserDocument, USERS_COLLECTION_NAME } from './schemas';
 import { getModelToken } from '@nestjs/mongoose';
-import { UserRoles } from './entities/user-roles.enum';
+import { UserRoles } from './model/enum/user-roles.enum';
 import { RegisterDto } from '../auth/dto/register.dto';
 import * as bcrypt from 'bcrypt';
 import { ConflictException } from '@nestjs/common';
@@ -29,7 +29,7 @@ describe('UserService', () => {
       providers: [
         UserService,
         {
-          provide: getModelToken(User.name),
+          provide: getModelToken(USERS_COLLECTION_NAME),
           useValue: {
             find: jest.fn(),
             findOne: jest.fn(),
@@ -44,7 +44,7 @@ describe('UserService', () => {
 
     service = module.get<UserService>(UserService);
     mockUserModel = await module.get<Model<UserDocument>>(
-      getModelToken(User.name),
+      getModelToken(USERS_COLLECTION_NAME),
     );
   });
 

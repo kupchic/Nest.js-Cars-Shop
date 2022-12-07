@@ -8,9 +8,10 @@ import {
 import { User } from './schemas';
 import { UserService } from './user.service';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { UserRoles } from './entities/user-roles.enum';
-import { UserDto } from './entities/user-response.dto';
+import { UserRoles } from './model/enum/user-roles.enum';
+import { UserDto } from './dto/user-response.dto';
 import { Roles } from '../common/decorators';
+import { MongoIdStringPipe } from '../common/pipes';
 
 @ApiTags('Users Module')
 @Controller('users')
@@ -31,7 +32,7 @@ export class UserController {
   })
   @Roles(UserRoles.ADMIN)
   @Get(':id')
-  async getUserById(@Param('id') id: string): Promise<User> {
+  async getUserById(@Param('id', MongoIdStringPipe) id: string): Promise<User> {
     try {
       const user: User = await this.userService.findById(id);
       if (!user) {
@@ -45,7 +46,9 @@ export class UserController {
 
   @Roles(UserRoles.ADMIN)
   @Delete(':id')
-  async deleteUserById(@Param('id') id: string): Promise<void> {
+  async deleteUserById(
+    @Param('id', MongoIdStringPipe) id: string,
+  ): Promise<void> {
     try {
       const user: User = await this.userService.deleteById(id);
       if (!user) {
