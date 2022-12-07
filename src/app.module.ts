@@ -18,7 +18,7 @@ import 'dotenv/config';
       isGlobal: true,
     }),
     MongooseModule.forRoot(process.env.DB_HOST, {
-      dbName: 'CarsShop',
+      dbName: process.env.DB_NAME,
     }),
     ManagerModule,
     ProductModule,
