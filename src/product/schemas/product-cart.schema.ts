@@ -6,7 +6,8 @@ import mongoose, {
 } from 'mongoose';
 import { User } from '../../user/schemas';
 import { Product } from './product.schema';
-import { ProductCartItem } from '../product-cart/entities/product-cart-item.entity';
+import { ProductCartItemEntity } from '../product-cart/entities/product-cart-item.entity';
+import UserModel from '../../user/schemas/user.schema';
 
 const productCartOptions: ToObjectOptions = {
   virtuals: true,
@@ -34,20 +35,43 @@ export class ProductCart {
 
   @Prop({
     required: true,
-    type: [ProductCartItem],
-    ref: Product.name,
+    type: [
+      {
+        productId: {
+          type: mongoose.Schema.Types.ObjectId,
+          unique: true,
+          ref: Product.name,
+        },
+        quantity: { type: 'Number', min: 0 },
+      },
+    ],
+    default: () => [],
   })
-  products: ProductCartItem[];
+  products: ProductCartItemEntity[];
+
+  id?: string;
 }
 
 export const ProductCartSchema: mongoose.Schema<ProductCart> =
   SchemaFactory.createForClass(ProductCart);
 export type ProductCartDocument = ProductCart & Document;
+export type ProductCartModel = mongoose.Model<ProductCartDocument>;
+
+const ProductCartModel: ProductCartModel = mongoose.model<
+  ProductCartDocument,
+  ProductCartModel
+>('ProductCart', ProductCartSchema);
+export default ProductCartModel;
 
 ProductCartSchema.pre(
-  'save',
-  function (next: CallbackWithoutResultAndOptionalError) {
-    console.log(this);
+  'findOneAndUpdate',
+  async function (
+    this: ProductCartDocument,
+    next: CallbackWithoutResultAndOptionalError,
+  ) {
+    await UserModel.findByIdAndUpdate(this.user, {
+      cart: this.toJSON(),
+    });
     next();
   },
 );

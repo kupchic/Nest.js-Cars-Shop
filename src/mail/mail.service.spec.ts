@@ -20,6 +20,7 @@ describe('MailService', () => {
     lastName: 'Tester',
     phone: '8029',
     isBlocked: false,
+    cart: 's',
   };
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({

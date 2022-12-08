@@ -1,6 +1,5 @@
 import { Module, ValidationPipe } from '@nestjs/common';
 import { ProductModule } from './product/product.module';
-import { ManagerModule } from './manager/manager.module';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './user/user.module';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -21,7 +20,6 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
     MongooseModule.forRoot(process.env.DB_HOST, {
       dbName: process.env.DB_NAME,
     }),
-    ManagerModule,
     ProductModule,
     UserModule,
     AuthModule,

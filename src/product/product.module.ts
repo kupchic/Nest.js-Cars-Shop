@@ -14,7 +14,12 @@ import { ProductModelService } from './product-model/product-model.service';
 import { ProductBrandService } from './product-brand/product-brand.service';
 import { ProductBrandController } from './product-brand/product-brand.controller';
 import { ProductModelController } from './product-model/product-model.controller';
-import { ProductCartModule } from './product-cart/product-cart.module';
+import { ProductCartController } from './product-cart/product-cart.controller';
+import { ProductCartService } from './product-cart/product-cart.service';
+import {
+  PRODUCT_CART_COLLECTION_NAME,
+  ProductCartSchema,
+} from './schemas/product-cart.schema';
 
 @Module({
   imports: [
@@ -28,13 +33,22 @@ import { ProductCartModule } from './product-cart/product-cart.module';
         name: PRODUCT_BRANDS_COLLECTION_NAME,
         schema: ProductBrandSchema,
       },
+      {
+        name: PRODUCT_CART_COLLECTION_NAME,
+        schema: ProductCartSchema,
+      },
     ]),
-    ProductCartModule,
   ],
-  providers: [ProductService, ProductModelService, ProductBrandService],
+  providers: [
+    ProductService,
+    ProductModelService,
+    ProductBrandService,
+    ProductCartService,
+  ],
   controllers: [
     ProductBrandController,
     ProductModelController,
+    ProductCartController,
     ProductController,
   ],
 })

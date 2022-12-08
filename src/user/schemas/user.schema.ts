@@ -1,8 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { UserRoles } from '../model/enum/user-roles.enum';
-import mongoose, { Document, ToObjectOptions } from 'mongoose';
+import mongoose, {
+  CallbackWithoutResultAndOptionalError,
+  Document,
+  ToObjectOptions,
+} from 'mongoose';
 import { IsOptional } from 'class-validator';
 import { Exclude } from 'class-transformer';
+import ProductCartModel from '../../product/schemas/product-cart.schema';
 
 const userOptions: ToObjectOptions = {
   versionKey: false,
@@ -51,6 +56,15 @@ export class User {
   })
   isBlocked: boolean;
 
+  @Prop({
+    required: false,
+    type: {
+      type: mongoose.Schema.Types.ObjectId,
+      unique: true,
+    },
+  })
+  cart: string;
+
   @IsOptional()
   @Exclude()
   @Prop({
@@ -66,3 +80,23 @@ export class User {
 export const UserSchema: mongoose.Schema<User> =
   SchemaFactory.createForClass(User);
 export type UserDocument = User & Document;
+export type UserModel = mongoose.Model<UserDocument>;
+
+const UserModel: UserModel = mongoose.model<UserDocument, UserModel>(
+  'user',
+  UserSchema,
+);
+export default UserModel;
+UserSchema.pre(
+  'save',
+  async function (
+    this: UserDocument,
+    next: CallbackWithoutResultAndOptionalError,
+  ) {
+    await ProductCartModel.create({
+      //todo
+      user: this.id,
+    });
+    next();
+  },
+);

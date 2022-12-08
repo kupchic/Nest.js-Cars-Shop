@@ -1,46 +1,65 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Put } from '@nestjs/common';
 import { ProductCartService } from './product-cart.service';
-import { CreateProductCartDto } from './dto/create-product-cart.dto';
 import { UpdateProductCartDto } from './dto/update-product-cart.dto';
+import { GetCurrentUser, Roles } from '../../common/decorators';
+import { User } from '../../user/schemas';
+import { UserRoles } from '../../user/model/enum/user-roles.enum';
+import { MongoIdStringPipe } from '../../common/pipes';
+import { ProductCart } from '../schemas/product-cart.schema';
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ProductCartEntity } from './entities/product-cart.entity';
 
-@Controller('product-cart')
+@ApiTags('Product Cart Module')
+@Controller('products/carts')
 export class ProductCartController {
   constructor(private readonly productCartService: ProductCartService) {}
 
-  @Post()
-  create(@Body() createProductCartDto: CreateProductCartDto): any {
-    return this.productCartService.create(createProductCartDto);
-  }
-
+  @ApiResponse({
+    type: ProductCartEntity,
+    isArray: true,
+  })
+  @Roles(UserRoles.ADMIN)
   @Get()
-  findAll(): any {
+  findAll(): Promise<ProductCart[]> {
     return this.productCartService.findAll();
   }
-  s;
 
-  @Get(':id')
-  findOne(@Param('id') id: string): any {
-    return this.productCartService.findOne();
+  @ApiResponse({
+    type: ProductCartEntity,
+  })
+  @Get('my')
+  getCurrentUserCart(@GetCurrentUser() user: User): Promise<ProductCart> {
+    return this.productCartService.findOne(user.cart);
   }
 
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
+  @ApiResponse({
+    type: ProductCartEntity,
+  })
+  @Put('my')
+  updateMyCart(
+    @GetCurrentUser() user: User,
     @Body() updateProductCartDto: UpdateProductCartDto,
-  ): any {
-    return this.productCartService.update(+id, updateProductCartDto);
+  ): Promise<ProductCart> {
+    return this.productCartService.update(user.cart, updateProductCartDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string): any {
-    return this.productCartService.remove(+id);
+  @ApiResponse({
+    type: ProductCartEntity,
+  })
+  @Roles(UserRoles.ADMIN)
+  @Get(':id')
+  findOne(@Param('id', MongoIdStringPipe) id: string): Promise<ProductCart> {
+    return this.productCartService.findOne(id);
+  }
+
+  @ApiResponse({
+    type: ProductCartEntity,
+  })
+  @Put(':id')
+  update(
+    @Param('id', MongoIdStringPipe) id: string,
+    @Body() updateProductCartDto: UpdateProductCartDto,
+  ): Promise<ProductCart> {
+    return this.productCartService.update(id, updateProductCartDto);
   }
 }

@@ -1,4 +1,10 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateProductCartDto } from './create-product-cart.dto';
+import { ApiProperty } from '@nestjs/swagger';
+import { ProductCartItemEntity } from '../entities/product-cart-item.entity';
+import { IsArray, IsInstance } from 'class-validator';
 
-export class UpdateProductCartDto extends PartialType(CreateProductCartDto) {}
+export class UpdateProductCartDto {
+  @ApiProperty({ type: ProductCartItemEntity, isArray: true })
+  @IsArray()
+  @IsInstance(ProductCartItemEntity, { each: true })
+  products: ProductCartItemEntity[];
+}

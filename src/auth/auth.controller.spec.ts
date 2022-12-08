@@ -24,6 +24,7 @@ describe('AuthController', () => {
     lastName: 'Tester',
     phone: '8029',
     isBlocked: false,
+    cart: 's',
   };
   beforeEach(async () => {
     mockUser.password = await bcrypt.hash('123456', 10);

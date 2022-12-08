@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { CreateProductCartDto } from './dto/create-product-cart.dto';
 import { UpdateProductCartDto } from './dto/update-product-cart.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import {
   PRODUCT_CART_COLLECTION_NAME,
+  ProductCart,
   ProductCartDocument,
 } from '../schemas/product-cart.schema';
 import { Model } from 'mongoose';
@@ -15,15 +15,24 @@ export class ProductCartService {
     private cartModel: Model<ProductCartDocument>,
   ) {}
 
-  async create(createProductCartDto: CreateProductCartDto): Promise<any> {
-    return await this.cartModel.create(createProductCartDto);
+  findAll(): Promise<ProductCart[]> {
+    return this.cartModel.find().exec();
   }
 
-  findAll(): void {}
+  findOne(id: string): Promise<ProductCart> {
+    return this.cartModel.findById(id).exec();
+  }
 
-  findOne(): void {}
+  async findByUserId(userId): Promise<ProductCart> {
+    return this.cartModel.findOne({ user: userId }).exec();
+  }
 
-  update(id: number, updateProductCartDto: UpdateProductCartDto): void {}
-
-  remove(id: number): void {}
+  update(
+    id: string,
+    updateProductCartDto: UpdateProductCartDto,
+  ): Promise<ProductCart> {
+    return this.cartModel
+      .findByIdAndUpdate(id, updateProductCartDto, { new: true })
+      .exec();
+  }
 }

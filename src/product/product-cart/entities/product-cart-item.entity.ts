@@ -1,13 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Prop } from '@nestjs/mongoose';
-import * as mongoose from 'mongoose';
+import { IsMongoId, IsNumber, Min } from 'class-validator';
 
-export class ProductCartItem {
+export class ProductCartItemEntity {
   @ApiProperty({ description: 'Product mongoId' })
-  @Prop({ type: mongoose.Schema.Types.ObjectId, unique: true })
+  @IsMongoId()
   productId: string;
 
   @ApiProperty()
-  @Prop({ type: 'Number', min: 0 })
+  @IsNumber()
+  @Min(1)
   quantity: number;
 }

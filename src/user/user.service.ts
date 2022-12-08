@@ -4,8 +4,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model } from 'mongoose';
-import { User, UserDocument, USERS_COLLECTION_NAME } from './schemas';
+import { FilterQuery } from 'mongoose';
+import { User, UserModel, USERS_COLLECTION_NAME } from './schemas';
 import * as bcrypt from 'bcrypt';
 import { RegisterDto } from '../auth/dto/register.dto';
 import { UserRoles } from './model/enum/user-roles.enum';
@@ -14,7 +14,7 @@ import { IPaginatedResponse, SearchQueryDto } from '../common/model';
 @Injectable()
 export class UserService {
   constructor(
-    @InjectModel(USERS_COLLECTION_NAME) private userModel: Model<UserDocument>,
+    @InjectModel(USERS_COLLECTION_NAME) private userModel: UserModel,
   ) {}
 
   async registerUser(registerDto: RegisterDto): Promise<User> {
