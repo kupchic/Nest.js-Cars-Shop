@@ -7,7 +7,7 @@ import mongoose, {
 } from 'mongoose';
 import { IsOptional } from 'class-validator';
 import { Exclude } from 'class-transformer';
-import ProductCartModel from '../../product/schemas/product-cart.schema';
+import { PRODUCT_CART_COLLECTION_NAME } from '../../product/schemas/product-cart.schema';
 
 const userOptions: ToObjectOptions = {
   versionKey: false,
@@ -32,7 +32,7 @@ export class User {
   @Prop({ required: true, type: 'String' })
   lastName: string;
 
-  @Prop({ required: true, type: 'String' })
+  @Prop({ required: true, type: 'String', unique: true })
   email: string;
 
   @Prop({ required: true, type: 'String' })
@@ -58,10 +58,9 @@ export class User {
 
   @Prop({
     required: false,
-    type: {
-      type: mongoose.Schema.Types.ObjectId,
-      unique: true,
-    },
+    type: mongoose.Schema.Types.ObjectId,
+    // ref: ProductModel.name, // TODO
+    unique: true,
   })
   cart: string;
 
@@ -93,10 +92,10 @@ UserSchema.pre(
     this: UserDocument,
     next: CallbackWithoutResultAndOptionalError,
   ) {
-    await ProductCartModel.create({
-      //todo
+    const cart: any = await this.$model(PRODUCT_CART_COLLECTION_NAME).create({
       user: this.id,
     });
+    this.cart = cart.id;
     next();
   },
 );

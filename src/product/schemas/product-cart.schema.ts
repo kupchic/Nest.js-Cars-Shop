@@ -5,9 +5,8 @@ import mongoose, {
   ToObjectOptions,
 } from 'mongoose';
 import { User } from '../../user/schemas';
-import { Product } from './product.schema';
 import { ProductCartItemEntity } from '../product-cart/entities/product-cart-item.entity';
-import UserModel from '../../user/schemas/user.schema';
+import { Product } from './product.schema';
 
 const productCartOptions: ToObjectOptions = {
   virtuals: true,
@@ -39,7 +38,6 @@ export class ProductCart {
       {
         productId: {
           type: mongoose.Schema.Types.ObjectId,
-          unique: true,
           ref: Product.name,
         },
         quantity: { type: 'Number', min: 0 },
@@ -69,9 +67,9 @@ ProductCartSchema.pre(
     this: ProductCartDocument,
     next: CallbackWithoutResultAndOptionalError,
   ) {
-    await UserModel.findByIdAndUpdate(this.user, {
-      cart: this.toJSON(),
-    });
+    // await UserModel.findByIdAndUpdate(this.user, {
+    //   cart: this.toJSON(),
+    // });
     next();
   },
 );
