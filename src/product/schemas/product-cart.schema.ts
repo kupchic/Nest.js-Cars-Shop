@@ -1,9 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, {
-  CallbackWithoutResultAndOptionalError,
-  Document,
-  ToObjectOptions,
-} from 'mongoose';
+import mongoose, { Document, ToObjectOptions } from 'mongoose';
 import { User } from '../../user/schemas';
 import { ProductCartItemEntity } from '../product-cart/entities/product-cart-item.entity';
 import { Product } from './product.schema';
@@ -36,11 +32,11 @@ export class ProductCart {
     required: true,
     type: [
       {
-        productId: {
+        product: {
           type: mongoose.Schema.Types.ObjectId,
           ref: Product.name,
         },
-        quantity: { type: 'Number', min: 0 },
+        quantity: { type: 'Number', min: 1 },
       },
     ],
     default: () => [],
@@ -60,16 +56,3 @@ const ProductCartModel: ProductCartModel = mongoose.model<
   ProductCartModel
 >('ProductCart', ProductCartSchema);
 export default ProductCartModel;
-
-ProductCartSchema.pre(
-  'findOneAndUpdate',
-  async function (
-    this: ProductCartDocument,
-    next: CallbackWithoutResultAndOptionalError,
-  ) {
-    // await UserModel.findByIdAndUpdate(this.user, {
-    //   cart: this.toJSON(),
-    // });
-    next();
-  },
-);

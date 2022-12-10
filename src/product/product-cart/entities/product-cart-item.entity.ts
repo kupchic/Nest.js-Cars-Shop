@@ -4,7 +4,7 @@ import { IsMongoId, IsNumber, Min } from 'class-validator';
 export class ProductCartItemEntity {
   @ApiProperty({ description: 'Product mongoId' })
   @IsMongoId()
-  productId: string;
+  product: string;
 
   @ApiProperty()
   @IsNumber()

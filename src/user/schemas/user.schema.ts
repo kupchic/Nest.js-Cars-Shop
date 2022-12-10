@@ -8,6 +8,7 @@ import mongoose, {
 import { IsOptional } from 'class-validator';
 import { Exclude } from 'class-transformer';
 import { PRODUCT_CART_COLLECTION_NAME } from '../../product/schemas/product-cart.schema';
+import { ProductModel } from '../../product/schemas';
 
 const userOptions: ToObjectOptions = {
   versionKey: false,
@@ -59,7 +60,7 @@ export class User {
   @Prop({
     required: false,
     type: mongoose.Schema.Types.ObjectId,
-    // ref: ProductModel.name, // TODO
+    ref: ProductModel.name,
     unique: true,
   })
   cart: string;
