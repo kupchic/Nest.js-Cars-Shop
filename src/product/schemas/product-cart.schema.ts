@@ -1,6 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { Document, ToObjectOptions } from 'mongoose';
-import { User } from '../../user/schemas';
+import mongoose, {
+  CallbackWithoutResultAndOptionalError,
+  Document,
+  ToObjectOptions,
+} from 'mongoose';
+import { USER_MODEL } from '../../user/schemas';
 import { ProductCartItemEntity } from '../product-cart/entities/product-cart-item.entity';
 import { Product } from './product.schema';
 
@@ -23,7 +27,7 @@ export class ProductCart {
   @Prop({
     required: true,
     type: mongoose.Schema.Types.ObjectId,
-    ref: User.name,
+    ref: () => USER_MODEL,
     unique: true,
   })
   user: string;
@@ -50,9 +54,20 @@ export const ProductCartSchema: mongoose.Schema<ProductCart> =
   SchemaFactory.createForClass(ProductCart);
 export type ProductCartDocument = ProductCart & Document;
 export type ProductCartModel = mongoose.Model<ProductCartDocument>;
+export const PRODUCT_CART_MODEL: string = ProductCart.name;
 
-const ProductCartModel: ProductCartModel = mongoose.model<
-  ProductCartDocument,
-  ProductCartModel
->('ProductCart', ProductCartSchema);
-export default ProductCartModel;
+ProductCartSchema.pre(
+  'findOne',
+  function (next: CallbackWithoutResultAndOptionalError) {
+    this.populate('user');
+    next();
+  },
+);
+
+ProductCartSchema.pre(
+  'find',
+  function (next: CallbackWithoutResultAndOptionalError) {
+    this.populate('user');
+    next();
+  },
+);

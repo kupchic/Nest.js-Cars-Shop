@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery } from 'mongoose';
-import { User, UserModel, USERS_COLLECTION_NAME } from './schemas';
+import { User, USER_MODEL, UserModel } from './schemas';
 import * as bcrypt from 'bcrypt';
 import { RegisterDto } from '../auth/dto/register.dto';
 import { UserRoles } from './model/enum/user-roles.enum';
@@ -13,9 +13,7 @@ import { IPaginatedResponse, SearchQueryDto } from '../common/model';
 
 @Injectable()
 export class UserService {
-  constructor(
-    @InjectModel(USERS_COLLECTION_NAME) private userModel: UserModel,
-  ) {}
+  constructor(@InjectModel(USER_MODEL) private userModel: UserModel) {}
 
   async registerUser(registerDto: RegisterDto): Promise<User> {
     try {

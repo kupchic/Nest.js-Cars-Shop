@@ -17,7 +17,7 @@ import { ProductModelController } from './product-model/product-model.controller
 import { ProductCartController } from './product-cart/product-cart.controller';
 import { ProductCartService } from './product-cart/product-cart.service';
 import {
-  PRODUCT_CART_COLLECTION_NAME,
+  PRODUCT_CART_MODEL,
   ProductCartSchema,
 } from './schemas/product-cart.schema';
 
@@ -34,7 +34,7 @@ import {
         schema: ProductBrandSchema,
       },
       {
-        name: PRODUCT_CART_COLLECTION_NAME,
+        name: PRODUCT_CART_MODEL,
         schema: ProductCartSchema,
       },
     ]),
