@@ -57,15 +57,7 @@ export type ProductCartModel = mongoose.Model<ProductCartDocument>;
 export const PRODUCT_CART_MODEL: string = ProductCart.name;
 
 ProductCartSchema.pre(
-  'findOne',
-  function (next: CallbackWithoutResultAndOptionalError) {
-    this.populate('user');
-    next();
-  },
-);
-
-ProductCartSchema.pre(
-  'find',
+  /^(findOne|find)/,
   function (next: CallbackWithoutResultAndOptionalError) {
     this.populate('user');
     next();
