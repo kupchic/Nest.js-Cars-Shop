@@ -8,6 +8,12 @@ export class ProductCartEntity {
   @ApiProperty()
   user: string;
 
-  @ApiProperty({ type: ProductCartItemEntity, isArray: true })
+  @ApiProperty({ type: [ProductCartItemEntity] })
   products: ProductCartItemEntity[];
+
+  @ApiProperty()
+  totalAmount: number;
+
+  @ApiProperty()
+  totalSum: number;
 }

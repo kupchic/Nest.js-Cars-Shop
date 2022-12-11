@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { UserRoles } from '../model/enum/user-roles.enum';
+import { ProductCartEntity } from '../../product/product-cart/entities/product-cart.entity';
 
 export class UserDto {
   @ApiProperty()
@@ -26,4 +27,7 @@ export class UserDto {
     enumName: 'UserRoles',
   })
   roles: [UserRoles];
+
+  @ApiProperty({ type: ProductCartEntity })
+  cart: ProductCartEntity;
 }

@@ -22,7 +22,7 @@ export class ProductCartService {
     return this.cartModel.findById(id).exec();
   }
 
-  async findByUserId(userId): Promise<ProductCart> {
+  findByUserId(userId): Promise<ProductCart> {
     return this.cartModel.findOne({ user: userId }).exec();
   }
 

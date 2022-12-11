@@ -55,6 +55,7 @@ export class ProductCartController {
   @ApiResponse({
     type: ProductCartEntity,
   })
+  @Roles(UserRoles.ADMIN)
   @Put(':id')
   update(
     @Param('id', MongoIdStringPipe) id: string,
