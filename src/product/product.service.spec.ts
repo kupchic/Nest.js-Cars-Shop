@@ -15,10 +15,9 @@ import { getModelToken } from '@nestjs/mongoose';
 import { ProductModelService } from './product-model/product-model.service';
 import { createMock } from '@golevelup/ts-jest';
 import { ProductBrandService } from './product-brand/product-brand.service';
-import { KeyValuePairs, OrderByEnum } from '../common/model';
+import { KeyValuePairs, OrderByEnum, SearchQueryDto } from '../common/model';
 import { CreateProductDto, ProductFiltersDto } from './dto';
 import { BodyTypes, ProductColors } from './model';
-import { ProductSearchQueryDto } from './dto/product-search-query.dto';
 import { BadRequestException, ConflictException } from '@nestjs/common';
 import SpyInstance = jest.SpyInstance;
 
@@ -112,7 +111,7 @@ describe('ProductService', () => {
         productModel: '507f1f77bcf86cd799439011',
       };
 
-      const query: ProductSearchQueryDto = {
+      const query: SearchQueryDto = {
         search: 'audi ауди',
         page: '10a',
         pageSize: '15.1',
@@ -183,7 +182,7 @@ describe('ProductService', () => {
         priceFrom: 10000,
       };
 
-      const query: ProductSearchQueryDto = {
+      const query: SearchQueryDto = {
         page: '2',
         pageSize: '10',
         sortBy: 'price',

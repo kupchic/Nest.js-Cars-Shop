@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { OrderByEnum } from './enums/order-by.enum';
 import {
   IsEnum,
   IsInt,
@@ -9,17 +10,16 @@ import {
   Min,
   ValidateIf,
 } from 'class-validator';
-import { OrderByEnum } from '../../common/model';
 import { Type } from 'class-transformer';
 
-export class ProductSearchQueryDto {
+export class SearchQueryDto {
   @ApiProperty({ enum: OrderByEnum, required: false })
-  @ValidateIf((dto: ProductSearchQueryDto) => !!dto.sortBy)
+  @ValidateIf((dto: SearchQueryDto) => !!dto.sortBy)
   @IsEnum(OrderByEnum)
   orderBy?: OrderByEnum;
 
   @ApiProperty({ description: 'Id of some of existed brand', required: false })
-  @ValidateIf((dto: ProductSearchQueryDto) => !!dto.orderBy)
+  @ValidateIf((dto: SearchQueryDto) => !!dto.orderBy)
   @IsNotEmpty()
   sortBy?: string;
 

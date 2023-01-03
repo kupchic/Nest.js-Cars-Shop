@@ -16,8 +16,8 @@ import { Product } from './schemas';
 import { CreateProductDto, ProductFiltersDto, UpdateProductDto } from './dto';
 import { MongoIdStringPipe } from '../common/pipes';
 import { UserRoles } from '../user/model/enum/user-roles.enum';
-import { ProductSearchQueryDto } from './dto/product-search-query.dto';
-import { IProduct, IProductResponse } from './model';
+import { IPaginatedProductResponse, IProduct } from './model';
+import { SearchQueryDto } from '../common/model';
 
 @ApiTags('Product Module')
 @Controller('products')
@@ -25,13 +25,13 @@ export class ProductController {
   constructor(private productService: ProductService) {}
 
   @ApiResponse({
-    type: IProductResponse,
+    type: IPaginatedProductResponse,
   })
   @Get()
   search(
-    @Query() query?: ProductSearchQueryDto | undefined,
+    @Query() query?: SearchQueryDto | undefined,
     @Body() filters?: ProductFiltersDto | undefined,
-  ): Promise<IProductResponse> {
+  ): Promise<IPaginatedProductResponse> {
     return this.productService.search(query, filters);
   }
 
