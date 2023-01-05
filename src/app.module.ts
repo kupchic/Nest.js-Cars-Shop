@@ -10,6 +10,7 @@ import { MailModule } from './mail/mail.module';
 import { MongoIdStringPipe } from './common/pipes';
 import 'dotenv/config';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { OrdersModule } from './orders/orders.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
     UserModule,
     AuthModule,
     MailModule,
+    OrdersModule,
   ],
   controllers: [],
   providers: [

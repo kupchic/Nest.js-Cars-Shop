@@ -5,18 +5,22 @@ import mongoose, {
   ToObjectOptions,
 } from 'mongoose';
 import { USER_MODEL } from '../../user/schemas';
-import { ProductCartItemEntity } from '../product-cart/entities/product-cart-item.entity';
-import { PRODUCTS_COLLECTION_NAME } from './product.schema';
+import { ConflictException } from '@nestjs/common';
+import {
+  PRODUCT_CART_MODEL,
+  PRODUCTS_COLLECTION_NAME,
+} from '../../product/schemas';
+import { PRODUCT_CART_ITEM_QUANTITY_LIMIT } from '../../product/model/consts/product-cart-item-quantity-limit';
+import { ProductCartItemEntity } from '../../product/product-cart/entities/product-cart-item.entity';
 import {
   PRODUCT_CART_SIZE_LIMIT,
   PRODUCT_CART_SIZE_LIMIT_ERROR,
-} from '../model/consts/product-cart-size-limit';
-import { PRODUCT_CART_ITEM_QUANTITY_LIMIT } from '../model/consts/product-cart-item-quantity-limit';
-import { UpdateProductCartDto } from '../product-cart/dto/update-product-cart.dto';
-import { ConflictException } from '@nestjs/common';
+} from '../../product/model/consts/product-cart-size-limit';
+import { UpdateOrderDto } from '../dto/update-order.dto';
 import { getProductsTotalSum } from '../../common/utils';
+import { OrderStatus } from '../model/enums/order-status';
 
-const productCartOptions: ToObjectOptions = {
+const ordersOptions: ToObjectOptions = {
   virtuals: true,
   transform: function (doc, model) {
     delete model._id;
@@ -24,24 +28,25 @@ const productCartOptions: ToObjectOptions = {
   },
 };
 
-export const PRODUCT_CART_COLLECTION_NAME: string = 'productCartCollection';
+export const ORDER_COLLECTION_NAME: string = 'ordersCollection';
 
 @Schema({
-  collection: PRODUCT_CART_COLLECTION_NAME,
+  collection: ORDER_COLLECTION_NAME,
+  toJSON: ordersOptions,
   versionKey: false,
-  toJSON: productCartOptions,
+  virtuals: true,
+  timestamps: true,
   statics: {
     async getTotalSum(productCatItems: ProductCartItemEntity[]) {
       return getProductsTotalSum.call(this, productCatItems);
     },
   },
 })
-export class ProductCart {
+export class Order {
   @Prop({
     required: true,
     type: mongoose.Schema.Types.ObjectId,
     ref: () => USER_MODEL,
-    unique: true,
     immutable: true,
   })
   user: string;
@@ -89,58 +94,83 @@ export class ProductCart {
   })
   totalSum: number;
 
+  @Prop({
+    type: 'Number',
+    min: 1,
+  })
+  orderNo: number;
+
+  @Prop({
+    required: true,
+    enum: OrderStatus,
+    default: () => OrderStatus.IN_PROGRESS,
+  })
+  status: OrderStatus;
+
   id?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-export const ProductCartSchema: mongoose.Schema<ProductCart> =
-  SchemaFactory.createForClass(ProductCart);
-export type ProductCartDocument = ProductCart & Document;
-export interface ProductCartModel extends mongoose.Model<ProductCartDocument> {
+export const OrderSchema: mongoose.Schema<Order> =
+  SchemaFactory.createForClass(Order);
+export type OrderDocument = Order & Document;
+export interface OrderModel extends mongoose.Model<OrderDocument> {
   getTotalSum(products: ProductCartItemEntity[]): Promise<number>;
 }
-export const PRODUCT_CART_MODEL: string = ProductCart.name;
+export const ORDER_MODEL: string = Order.name;
 
-ProductCartSchema.pre(
+OrderSchema.pre(
   /^(findOne|find)/,
   async function (next: CallbackWithoutResultAndOptionalError) {
     this.populate([
       'user',
       'products.product',
       // 'products.product.productBrand',
-      // 'products.product.productModel', //TODO investigate - cause error when empty products
+      // 'products.product.productModel',//TODO investigate
     ]);
     next();
   },
 );
 
-ProductCartSchema.pre(
+OrderSchema.pre(
   'save',
   async function (next: CallbackWithoutResultAndOptionalError) {
+    console.log(this);
     const products: ProductCartItemEntity[] = this.products || [];
     if (products.length > PRODUCT_CART_SIZE_LIMIT) {
       throw new ConflictException(PRODUCT_CART_SIZE_LIMIT_ERROR);
     } else {
       this.totalAmount = products.length;
       this.totalSum = await (
-        this.$model(PRODUCT_CART_MODEL) as ProductCartModel
+        this.$model(ORDER_MODEL) as OrderModel
       ).getTotalSum(products);
+      this.orderNo = await this.$model(ORDER_MODEL).countDocuments();
+      await this.$model(USER_MODEL).updateOne(
+        { _id: this.user },
+        { $push: { orders: this.id } },
+      ); // add order id to user orders
+      await this.$model(PRODUCT_CART_MODEL).findOneAndUpdate(
+        { user: this.user },
+        { $set: { products: [] } },
+      ); // empty user cart
       next();
     }
   },
 );
 
-ProductCartSchema.pre(
+OrderSchema.pre(
   'findOneAndUpdate',
   async function (next: CallbackWithoutResultAndOptionalError) {
     const products: ProductCartItemEntity[] =
-      (this.getUpdate() as UpdateProductCartDto).products || [];
+      (this.getUpdate() as UpdateOrderDto).products || [];
 
     if (products.length > PRODUCT_CART_SIZE_LIMIT) {
       throw new ConflictException(PRODUCT_CART_SIZE_LIMIT_ERROR);
     } else {
       this.findOneAndUpdate(this.getFilter(), {
         totalAmount: products.length,
-        totalSum: await (this.model as ProductCartModel).getTotalSum(products),
+        totalSum: await (this.model as OrderModel).getTotalSum(products),
       });
       next();
     }

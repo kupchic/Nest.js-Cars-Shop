@@ -7,8 +7,9 @@ import mongoose, {
 } from 'mongoose';
 import { IsOptional } from 'class-validator';
 import { Exclude } from 'class-transformer';
-import { PRODUCT_CART_MODEL } from '../../product/schemas/product-cart.schema';
+import { PRODUCT_CART_MODEL } from '../../product/schemas';
 import 'dotenv/config';
+import { ORDER_MODEL } from '../../orders/schemas/order.schema';
 
 const userOptions: ToObjectOptions = {
   versionKey: false,
@@ -64,6 +65,14 @@ export class User {
     unique: true,
   })
   cart: string;
+
+  @Prop({
+    required: false,
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: () => ORDER_MODEL,
+    default: () => [],
+  })
+  orders: string[];
 
   @IsOptional()
   @Exclude()
