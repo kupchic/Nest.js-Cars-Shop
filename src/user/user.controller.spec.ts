@@ -23,6 +23,7 @@ describe('UserController', () => {
     phone: '8029',
     isBlocked: false,
     cart: 's',
+    orders: [],
   };
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({

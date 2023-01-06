@@ -40,6 +40,7 @@ describe('AuthService', () => {
     phone: '8029',
     isBlocked: false,
     cart: 's',
+    orders: [],
   };
 
   beforeEach(async () => {

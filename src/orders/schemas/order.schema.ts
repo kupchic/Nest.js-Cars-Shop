@@ -7,7 +7,9 @@ import mongoose, {
 import { USER_MODEL } from '../../user/schemas';
 import { ConflictException } from '@nestjs/common';
 import {
+  PRODUCT_BRANDS_COLLECTION_NAME,
   PRODUCT_CART_MODEL,
+  PRODUCT_MODELS_COLLECTION_NAME,
   PRODUCTS_COLLECTION_NAME,
 } from '../../product/schemas';
 import { PRODUCT_CART_ITEM_QUANTITY_LIMIT } from '../../product/model/consts/product-cart-item-quantity-limit';
@@ -58,7 +60,7 @@ export class Order {
         _id: false, // disable auto creation
         product: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: (): string => PRODUCTS_COLLECTION_NAME,
+          ref: (): any => PRODUCTS_COLLECTION_NAME,
         },
         quantity: {
           type: 'Number',
@@ -123,12 +125,20 @@ export const ORDER_MODEL: string = Order.name;
 OrderSchema.pre(
   /^(findOne|find)/,
   async function (next: CallbackWithoutResultAndOptionalError) {
-    this.populate([
-      'user',
-      'products.product',
-      // 'products.product.productBrand',
-      // 'products.product.productModel',//TODO investigate
-    ]);
+    this.populate('user');
+    this.populate({
+      path: 'products.product',
+      populate: [
+        {
+          path: 'productBrand',
+          model: PRODUCT_BRANDS_COLLECTION_NAME,
+        },
+        {
+          path: 'productModel',
+          model: PRODUCT_MODELS_COLLECTION_NAME,
+        },
+      ],
+    });
     next();
   },
 );
@@ -136,7 +146,6 @@ OrderSchema.pre(
 OrderSchema.pre(
   'save',
   async function (next: CallbackWithoutResultAndOptionalError) {
-    console.log(this);
     const products: ProductCartItemEntity[] = this.products || [];
     if (products.length > PRODUCT_CART_SIZE_LIMIT) {
       throw new ConflictException(PRODUCT_CART_SIZE_LIMIT_ERROR);

@@ -15,6 +15,8 @@ import { PRODUCT_CART_ITEM_QUANTITY_LIMIT } from '../model/consts/product-cart-i
 import { UpdateProductCartDto } from '../product-cart/dto/update-product-cart.dto';
 import { ConflictException } from '@nestjs/common';
 import { getProductsTotalSum } from '../../common/utils';
+import { PRODUCT_BRANDS_COLLECTION_NAME } from './product-brand.schema';
+import { PRODUCT_MODELS_COLLECTION_NAME } from './product-model.schema';
 
 const productCartOptions: ToObjectOptions = {
   virtuals: true,
@@ -103,12 +105,20 @@ export const PRODUCT_CART_MODEL: string = ProductCart.name;
 ProductCartSchema.pre(
   /^(findOne|find)/,
   async function (next: CallbackWithoutResultAndOptionalError) {
-    this.populate([
-      'user',
-      'products.product',
-      // 'products.product.productBrand',
-      // 'products.product.productModel', //TODO investigate - cause error when empty products
-    ]);
+    this.populate('user');
+    this.populate({
+      path: 'products.product',
+      populate: [
+        {
+          path: 'productBrand',
+          model: PRODUCT_BRANDS_COLLECTION_NAME,
+        },
+        {
+          path: 'productModel',
+          model: PRODUCT_MODELS_COLLECTION_NAME,
+        },
+      ],
+    });
     next();
   },
 );

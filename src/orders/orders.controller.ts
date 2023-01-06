@@ -3,9 +3,10 @@ import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { Order } from './schemas/order.schema';
-import { GetCurrentUser } from '../common/decorators';
+import { GetCurrentUser, Roles } from '../common/decorators';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { OrderEntity } from './entities/order.entity';
+import { UserRoles } from '../user/model/enum/user-roles.enum';
 
 @ApiTags('Orders Module')
 @Controller('orders')
@@ -23,12 +24,21 @@ export class OrdersController {
     return this.ordersService.create(createOrderDto, userId);
   }
 
+  @Roles(UserRoles.ADMIN, UserRoles.MANAGER)
   @ApiResponse({
     type: [OrderEntity],
   })
   @Get()
   async findAll(): Promise<Order[]> {
     return this.ordersService.findAll();
+  }
+
+  @ApiResponse({
+    type: [OrderEntity],
+  })
+  @Get('my')
+  findMy(@GetCurrentUser('id') userId: string): Promise<Order> {
+    return this.ordersService.findByUserId(userId);
   }
 
   @ApiResponse({
