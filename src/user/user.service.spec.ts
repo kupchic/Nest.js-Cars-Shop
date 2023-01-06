@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from './user.service';
 import mongoose, { FilterQuery, Model } from 'mongoose';
-import { User, UserDocument, USERS_COLLECTION_NAME } from './schemas';
+import { User, UserDocument } from './schemas';
 import { getModelToken } from '@nestjs/mongoose';
 import { UserRoles } from './model/enum/user-roles.enum';
 import { RegisterDto } from '../auth/dto/register.dto';
@@ -10,6 +10,7 @@ import { ConflictException, NotFoundException } from '@nestjs/common';
 import {
   IPaginatedResponse,
   KeyValuePairs,
+  ModelName,
   SearchQueryDto,
 } from '../common/model';
 import SpyInstance = jest.SpyInstance;
@@ -36,7 +37,7 @@ describe('UserService', () => {
       providers: [
         UserService,
         {
-          provide: getModelToken(USERS_COLLECTION_NAME),
+          provide: getModelToken(ModelName.USER),
           useValue: {
             find: jest.fn(),
             findOne: jest.fn(),
@@ -53,7 +54,7 @@ describe('UserService', () => {
 
     service = module.get<UserService>(UserService);
     mockUserModel = await module.get<Model<UserDocument>>(
-      getModelToken(USERS_COLLECTION_NAME),
+      getModelToken(ModelName.USER),
     );
   });
 

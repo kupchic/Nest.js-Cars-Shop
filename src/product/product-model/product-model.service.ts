@@ -1,18 +1,15 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import {
-  PRODUCT_MODELS_COLLECTION_NAME,
-  ProductModel,
-  ProductModelDocument,
-} from '../schemas';
+import { ProductModel, ProductModelDocument } from '../schemas';
 import { Model } from 'mongoose';
 import { CreateProductModelDto } from '../dto';
 import { UpdateProductModelDto } from '../dto/update-product-model.dto';
+import { ModelName } from '../../common/model';
 
 @Injectable()
 export class ProductModelService {
   constructor(
-    @InjectModel(PRODUCT_MODELS_COLLECTION_NAME)
+    @InjectModel(ModelName.PRODUCT_MODEL)
     private productModelsModel: Model<ProductModelDocument>,
   ) {}
 

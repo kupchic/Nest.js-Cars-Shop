@@ -8,6 +8,7 @@ import {
   PRODUCT_ENGINE_SIZE_MIN_VALUE,
   TransmissionTypes,
 } from '../model';
+import { CollectionsName } from '../../common/model';
 
 const productModelOptions: ToObjectOptions = {
   virtuals: true,
@@ -17,10 +18,8 @@ const productModelOptions: ToObjectOptions = {
   },
 };
 
-export const PRODUCT_MODELS_COLLECTION_NAME: string = 'productModelsCollection';
-
 @Schema({
-  collection: PRODUCT_MODELS_COLLECTION_NAME,
+  collection: CollectionsName.PRODUCTS_MODELS,
   versionKey: false,
   toJSON: productModelOptions,
 })

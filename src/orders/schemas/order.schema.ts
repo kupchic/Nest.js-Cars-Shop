@@ -4,14 +4,8 @@ import mongoose, {
   Document,
   ToObjectOptions,
 } from 'mongoose';
-import { USER_MODEL } from '../../user/schemas';
 import { ConflictException } from '@nestjs/common';
-import {
-  PRODUCT_BRANDS_COLLECTION_NAME,
-  PRODUCT_CART_MODEL,
-  PRODUCT_MODELS_COLLECTION_NAME,
-  PRODUCTS_COLLECTION_NAME,
-} from '../../product/schemas';
+
 import { PRODUCT_CART_ITEM_QUANTITY_LIMIT } from '../../product/model/consts/product-cart-item-quantity-limit';
 import { ProductCartItemEntity } from '../../product/product-cart/entities/product-cart-item.entity';
 import {
@@ -21,6 +15,11 @@ import {
 import { UpdateOrderDto } from '../dto/update-order.dto';
 import { getProductsTotalSum } from '../../common/utils';
 import { OrderStatus } from '../model/enums/order-status';
+import {
+  CollectionsName,
+  ModelName,
+  PRODUCT_POPULATE_OPTIONS,
+} from '../../common/model';
 
 const ordersOptions: ToObjectOptions = {
   virtuals: true,
@@ -30,10 +29,8 @@ const ordersOptions: ToObjectOptions = {
   },
 };
 
-export const ORDER_COLLECTION_NAME: string = 'ordersCollection';
-
 @Schema({
-  collection: ORDER_COLLECTION_NAME,
+  collection: CollectionsName.ORDERS,
   toJSON: ordersOptions,
   versionKey: false,
   virtuals: true,
@@ -48,7 +45,7 @@ export class Order {
   @Prop({
     required: true,
     type: mongoose.Schema.Types.ObjectId,
-    ref: () => USER_MODEL,
+    ref: () => ModelName.USER,
     immutable: true,
   })
   user: string;
@@ -60,7 +57,7 @@ export class Order {
         _id: false, // disable auto creation
         product: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: (): any => PRODUCTS_COLLECTION_NAME,
+          ref: (): any => ModelName.PRODUCT,
         },
         quantity: {
           type: 'Number',
@@ -120,25 +117,17 @@ export type OrderDocument = Order & Document;
 export interface OrderModel extends mongoose.Model<OrderDocument> {
   getTotalSum(products: ProductCartItemEntity[]): Promise<number>;
 }
-export const ORDER_MODEL: string = Order.name;
-
 OrderSchema.pre(
   /^(findOne|find)/,
   async function (next: CallbackWithoutResultAndOptionalError) {
-    this.populate('user');
-    this.populate({
-      path: 'products.product',
-      populate: [
-        {
-          path: 'productBrand',
-          model: PRODUCT_BRANDS_COLLECTION_NAME,
-        },
-        {
-          path: 'productModel',
-          model: PRODUCT_MODELS_COLLECTION_NAME,
-        },
-      ],
-    });
+    console.log(PRODUCT_POPULATE_OPTIONS);
+    this.populate([
+      'user',
+      {
+        path: 'products.product',
+        populate: PRODUCT_POPULATE_OPTIONS,
+      },
+    ]);
     next();
   },
 );
@@ -152,14 +141,14 @@ OrderSchema.pre(
     } else {
       this.totalAmount = products.length;
       this.totalSum = await (
-        this.$model(ORDER_MODEL) as OrderModel
+        this.$model(ModelName.ORDER) as OrderModel
       ).getTotalSum(products);
-      this.orderNo = await this.$model(ORDER_MODEL).countDocuments();
-      await this.$model(USER_MODEL).updateOne(
+      this.orderNo = await this.$model(ModelName.ORDER).countDocuments();
+      await this.$model(ModelName.USER).updateOne(
         { _id: this.user },
         { $push: { orders: this.id } },
       ); // add order id to user orders
-      await this.$model(PRODUCT_CART_MODEL).findOneAndUpdate(
+      await this.$model(ModelName.PRODUCT_CART).findOneAndUpdate(
         { user: this.user },
         { $set: { products: [] } },
       ); // empty user cart

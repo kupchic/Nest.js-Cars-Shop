@@ -4,9 +4,7 @@ import mongoose, {
   Document,
   ToObjectOptions,
 } from 'mongoose';
-import { USER_MODEL } from '../../user/schemas';
 import { ProductCartItemEntity } from '../product-cart/entities/product-cart-item.entity';
-import { PRODUCTS_COLLECTION_NAME } from './product.schema';
 import {
   PRODUCT_CART_SIZE_LIMIT,
   PRODUCT_CART_SIZE_LIMIT_ERROR,
@@ -15,8 +13,11 @@ import { PRODUCT_CART_ITEM_QUANTITY_LIMIT } from '../model/consts/product-cart-i
 import { UpdateProductCartDto } from '../product-cart/dto/update-product-cart.dto';
 import { ConflictException } from '@nestjs/common';
 import { getProductsTotalSum } from '../../common/utils';
-import { PRODUCT_BRANDS_COLLECTION_NAME } from './product-brand.schema';
-import { PRODUCT_MODELS_COLLECTION_NAME } from './product-model.schema';
+import {
+  CollectionsName,
+  ModelName,
+  PRODUCT_POPULATE_OPTIONS,
+} from '../../common/model';
 
 const productCartOptions: ToObjectOptions = {
   virtuals: true,
@@ -26,10 +27,8 @@ const productCartOptions: ToObjectOptions = {
   },
 };
 
-export const PRODUCT_CART_COLLECTION_NAME: string = 'productCartCollection';
-
 @Schema({
-  collection: PRODUCT_CART_COLLECTION_NAME,
+  collection: CollectionsName.PRODUCTS_CART,
   versionKey: false,
   toJSON: productCartOptions,
   statics: {
@@ -42,7 +41,7 @@ export class ProductCart {
   @Prop({
     required: true,
     type: mongoose.Schema.Types.ObjectId,
-    ref: () => USER_MODEL,
+    ref: () => ModelName.USER,
     unique: true,
     immutable: true,
   })
@@ -55,7 +54,7 @@ export class ProductCart {
         _id: false, // disable auto creation
         product: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: (): string => PRODUCTS_COLLECTION_NAME,
+          ref: (): string => ModelName.PRODUCT,
         },
         quantity: {
           type: 'Number',
@@ -100,25 +99,17 @@ export type ProductCartDocument = ProductCart & Document;
 export interface ProductCartModel extends mongoose.Model<ProductCartDocument> {
   getTotalSum(products: ProductCartItemEntity[]): Promise<number>;
 }
-export const PRODUCT_CART_MODEL: string = ProductCart.name;
 
 ProductCartSchema.pre(
   /^(findOne|find)/,
   async function (next: CallbackWithoutResultAndOptionalError) {
-    this.populate('user');
-    this.populate({
-      path: 'products.product',
-      populate: [
-        {
-          path: 'productBrand',
-          model: PRODUCT_BRANDS_COLLECTION_NAME,
-        },
-        {
-          path: 'productModel',
-          model: PRODUCT_MODELS_COLLECTION_NAME,
-        },
-      ],
-    });
+    this.populate([
+      'user',
+      {
+        path: 'products.product',
+        populate: PRODUCT_POPULATE_OPTIONS,
+      },
+    ]);
     next();
   },
 );
@@ -132,7 +123,7 @@ ProductCartSchema.pre(
     } else {
       this.totalAmount = products.length;
       this.totalSum = await (
-        this.$model(PRODUCT_CART_MODEL) as ProductCartModel
+        this.$model(ModelName.PRODUCT_CART) as ProductCartModel
       ).getTotalSum(products);
       next();
     }

@@ -11,6 +11,7 @@ import {
   ProductColors,
 } from '../model';
 import { ProductBrand } from './product-brand.schema';
+import { CollectionsName, ModelName } from '../../common/model';
 
 const carOptions: ToObjectOptions = {
   versionKey: false,
@@ -21,26 +22,25 @@ const carOptions: ToObjectOptions = {
     return car;
   },
 };
-export const PRODUCTS_COLLECTION_NAME: string = 'productsCollection';
 
 @Schema({
   timestamps: true,
   versionKey: false,
   toJSON: carOptions,
-  collection: PRODUCTS_COLLECTION_NAME,
+  collection: CollectionsName.PRODUCTS,
 })
 export class Product {
   @Prop({
     required: true,
     type: mongoose.Schema.Types.ObjectId,
-    ref: ProductBrand.name,
+    ref: ModelName.PRODUCT_BRAND,
   })
   productBrand: ProductBrand;
 
   @Prop({
     required: true,
     type: mongoose.Schema.Types.ObjectId,
-    ref: ProductModel.name,
+    ref: ModelName.PRODUCT_MODEL,
   })
   productModel: ProductModel;
 

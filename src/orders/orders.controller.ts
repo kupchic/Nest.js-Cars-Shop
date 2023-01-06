@@ -7,6 +7,7 @@ import { GetCurrentUser, Roles } from '../common/decorators';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { OrderEntity } from './entities/order.entity';
 import { UserRoles } from '../user/model/enum/user-roles.enum';
+import { User } from '../user/schemas';
 
 @ApiTags('Orders Module')
 @Controller('orders')
@@ -19,9 +20,9 @@ export class OrdersController {
   @Post()
   create(
     @Body() createOrderDto: CreateOrderDto,
-    @GetCurrentUser('id') userId: string,
+    @GetCurrentUser() user: User,
   ): Promise<Order> {
-    return this.ordersService.create(createOrderDto, userId);
+    return this.ordersService.create(createOrderDto, user);
   }
 
   @Roles(UserRoles.ADMIN, UserRoles.MANAGER)
@@ -37,7 +38,7 @@ export class OrdersController {
     type: [OrderEntity],
   })
   @Get('my')
-  findMy(@GetCurrentUser('id') userId: string): Promise<Order> {
+  findMy(@GetCurrentUser('id') userId: string): Promise<Order[]> {
     return this.ordersService.findByUserId(userId);
   }
 

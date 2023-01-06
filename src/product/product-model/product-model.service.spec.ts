@@ -1,15 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProductModelService } from './product-model.service';
 import { getModelToken } from '@nestjs/mongoose';
-import {
-  PRODUCT_MODELS_COLLECTION_NAME,
-  ProductModel,
-  ProductModelDocument,
-} from '../schemas';
+import { ProductModel, ProductModelDocument } from '../schemas';
 import { BodyTypes, EngineTypes, TransmissionTypes } from '../model';
 import { Model } from 'mongoose';
 import { CreateProductModelDto } from '../dto';
 import { BadRequestException } from '@nestjs/common';
+import { ModelName } from '../../common/model';
 import SpyInstance = jest.SpyInstance;
 
 describe('ProductModelService', () => {
@@ -29,7 +26,7 @@ describe('ProductModelService', () => {
       providers: [
         ProductModelService,
         {
-          provide: getModelToken(PRODUCT_MODELS_COLLECTION_NAME),
+          provide: getModelToken(ModelName.PRODUCT_MODEL),
           useValue: {
             find: jest.fn(),
             findOne: jest.fn(),
@@ -43,7 +40,7 @@ describe('ProductModelService', () => {
     }).compile();
 
     service = module.get<ProductModelService>(ProductModelService);
-    mockModel = module.get(getModelToken(PRODUCT_MODELS_COLLECTION_NAME));
+    mockModel = module.get(getModelToken(ModelName.PRODUCT_MODEL));
   });
 
   it('should be defined', () => {

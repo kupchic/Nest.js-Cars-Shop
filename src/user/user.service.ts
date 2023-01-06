@@ -5,15 +5,15 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery } from 'mongoose';
-import { User, USER_MODEL, UserModel } from './schemas';
+import { User, UserModel } from './schemas';
 import * as bcrypt from 'bcrypt';
 import { RegisterDto } from '../auth/dto/register.dto';
 import { UserRoles } from './model/enum/user-roles.enum';
-import { IPaginatedResponse, SearchQueryDto } from '../common/model';
+import { IPaginatedResponse, ModelName, SearchQueryDto } from '../common/model';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectModel(USER_MODEL) private userModel: UserModel) {}
+  constructor(@InjectModel(ModelName.USER) private userModel: UserModel) {}
 
   async registerUser(registerDto: RegisterDto): Promise<User> {
     try {
@@ -59,7 +59,20 @@ export class UserService {
           { $match: match },
           {
             $facet: {
-              data: [{ $skip: skip }, { $limit: pageSize }],
+              data: [
+                { $skip: skip },
+                { $limit: pageSize },
+                {
+                  $addFields: {
+                    id: {
+                      $toString: '$_id',
+                    },
+                  },
+                },
+                {
+                  $unset: '_id',
+                },
+              ],
               pagination: [{ $count: 'totalRecords' }],
             },
           },

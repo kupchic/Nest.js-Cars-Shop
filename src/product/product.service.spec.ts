@@ -4,18 +4,20 @@ import * as mongoose from 'mongoose';
 import { FilterQuery, Model } from 'mongoose';
 import {
   Product,
-  PRODUCT_BRANDS_COLLECTION_NAME,
-  PRODUCT_MODELS_COLLECTION_NAME,
   ProductBrand,
   ProductDocument,
   ProductModel,
-  PRODUCTS_COLLECTION_NAME,
 } from './schemas';
 import { getModelToken } from '@nestjs/mongoose';
 import { ProductModelService } from './product-model/product-model.service';
 import { createMock } from '@golevelup/ts-jest';
 import { ProductBrandService } from './product-brand/product-brand.service';
-import { KeyValuePairs, OrderByEnum, SearchQueryDto } from '../common/model';
+import {
+  KeyValuePairs,
+  ModelName,
+  OrderByEnum,
+  SearchQueryDto,
+} from '../common/model';
 import { CreateProductDto, ProductFiltersDto } from './dto';
 import { BodyTypes, ProductColors } from './model';
 import { BadRequestException, ConflictException } from '@nestjs/common';
@@ -41,7 +43,7 @@ describe('ProductService', () => {
       providers: [
         ProductService,
         {
-          provide: getModelToken(PRODUCTS_COLLECTION_NAME),
+          provide: getModelToken(ModelName.PRODUCT),
           useValue: {
             find: jest.fn(),
             findOne: jest.fn(),
@@ -64,7 +66,7 @@ describe('ProductService', () => {
     }).compile();
 
     service = module.get<ProductService>(ProductService);
-    mockModel = module.get(getModelToken(PRODUCTS_COLLECTION_NAME));
+    mockModel = module.get(getModelToken(ModelName.PRODUCT));
     mockModelService = module.get<ProductModelService>(ProductModelService);
     mockBrandService = module.get<ProductBrandService>(ProductBrandService);
   });
@@ -479,7 +481,7 @@ function createSearchAggregateQuery(
     },
     {
       $lookup: {
-        from: PRODUCT_BRANDS_COLLECTION_NAME,
+        from: ModelName.PRODUCT_BRAND,
         localField: 'productBrand',
         foreignField: '_id',
         as: 'productBrand',
@@ -501,7 +503,7 @@ function createSearchAggregateQuery(
     },
     {
       $lookup: {
-        from: PRODUCT_MODELS_COLLECTION_NAME,
+        from: ModelName.PRODUCT_BRAND,
         localField: 'productModel',
         foreignField: '_id',
         as: 'productModel',

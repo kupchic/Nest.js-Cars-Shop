@@ -7,9 +7,8 @@ import mongoose, {
 } from 'mongoose';
 import { IsOptional } from 'class-validator';
 import { Exclude } from 'class-transformer';
-import { PRODUCT_CART_MODEL } from '../../product/schemas';
 import 'dotenv/config';
-import { ORDER_MODEL } from '../../orders/schemas/order.schema';
+import { CollectionsName, ModelName } from '../../common/model';
 
 const userOptions: ToObjectOptions = {
   versionKey: false,
@@ -20,12 +19,11 @@ const userOptions: ToObjectOptions = {
   },
 };
 
-export const USERS_COLLECTION_NAME: string = 'usersCollection';
-
 @Schema({
-  collection: USERS_COLLECTION_NAME,
+  collection: CollectionsName.USERS,
   toJSON: userOptions,
   versionKey: false,
+  virtuals: true,
 })
 export class User {
   @Prop({ required: true, type: 'String' })
@@ -61,7 +59,7 @@ export class User {
   @Prop({
     required: false,
     type: mongoose.Schema.Types.ObjectId,
-    ref: () => PRODUCT_CART_MODEL,
+    ref: () => ModelName.PRODUCT_CART,
     unique: true,
   })
   cart: string;
@@ -69,7 +67,7 @@ export class User {
   @Prop({
     required: false,
     type: [mongoose.Schema.Types.ObjectId],
-    ref: () => ORDER_MODEL,
+    ref: () => ModelName.ORDER,
     default: () => [],
   })
   orders: string[];
@@ -90,12 +88,11 @@ export const UserSchema: mongoose.Schema<User> =
   SchemaFactory.createForClass(User);
 export type UserDocument = User & Document;
 export type UserModel = mongoose.Model<UserDocument>;
-export const USER_MODEL: string = User.name;
 
 UserSchema.pre(
   'save',
   async function (next: CallbackWithoutResultAndOptionalError) {
-    const cart: any = await this.$model(PRODUCT_CART_MODEL).create({
+    const cart: any = await this.$model(ModelName.PRODUCT_CART).create({
       user: this.id,
     });
     this.cart = cart.id;
@@ -115,7 +112,9 @@ UserSchema.pre(
   'findOneAndDelete',
   async function (next: CallbackWithoutResultAndOptionalError) {
     const user: UserDocument = await this.model.findOne(this.getFilter());
-    await this.model.db.model(PRODUCT_CART_MODEL).findByIdAndDelete(user.cart);
+    await this.model.db
+      .model(ModelName.PRODUCT_CART)
+      .findByIdAndDelete(user.cart);
     next();
   },
 );
@@ -123,7 +122,7 @@ UserSchema.pre(
 UserSchema.pre(
   'deleteOne',
   async function (next: CallbackWithoutResultAndOptionalError) {
-    await this.$model(PRODUCT_CART_MODEL).findByIdAndDelete(this.cart);
+    await this.$model(ModelName.PRODUCT_CART).findByIdAndDelete(this.cart);
     next();
   },
 );
@@ -134,7 +133,7 @@ UserSchema.pre(
     const filter: mongoose.FilterQuery<any> = {
       user: this.getFilter()._id,
     };
-    await this.model.db.model(PRODUCT_CART_MODEL).deleteMany(filter);
+    await this.model.db.model(ModelName.PRODUCT_CART).deleteMany(filter);
     next();
   },
 );

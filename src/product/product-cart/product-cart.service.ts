@@ -1,16 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { UpdateProductCartDto } from './dto/update-product-cart.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import {
-  PRODUCT_CART_MODEL,
-  ProductCart,
-  ProductCartModel,
-} from '../schemas/product-cart.schema';
+import { ProductCart, ProductCartModel } from '../schemas';
+import { ModelName } from '../../common/model';
 
 @Injectable()
 export class ProductCartService {
   constructor(
-    @InjectModel(PRODUCT_CART_MODEL)
+    @InjectModel(ModelName.PRODUCT_CART)
     private cartModel: ProductCartModel,
   ) {}
 

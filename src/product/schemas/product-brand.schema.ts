@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document, ToObjectOptions } from 'mongoose';
+import { CollectionsName } from '../../common/model';
 
 const productBrandOptions: ToObjectOptions = {
   virtuals: true,
@@ -9,10 +10,8 @@ const productBrandOptions: ToObjectOptions = {
   },
 };
 
-export const PRODUCT_BRANDS_COLLECTION_NAME: string = 'productBrandsCollection';
-
 @Schema({
-  collection: PRODUCT_BRANDS_COLLECTION_NAME,
+  collection: CollectionsName.PRODUCTS_BRANDS,
   versionKey: false,
   toJSON: productBrandOptions,
 })
