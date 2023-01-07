@@ -10,8 +10,8 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
     MailerModule.forRoot({
       transport: {
         host: process.env.MAIL_HOST,
-        port: 587,
-        secure: false,
+        port: 465,
+        secure: true,
         auth: {
           user: process.env.MAIL_USER,
           pass: process.env.MAIL_PASS,
@@ -22,7 +22,20 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
       },
       template: {
         dir: join(process.cwd(), 'src/mail/templates'),
-        adapter: new HandlebarsAdapter(),
+        adapter: new HandlebarsAdapter({
+          // Function to do basic mathematical operation in handlebar
+          math: function (lvalue, operator, rvalue): void {
+            lvalue = parseFloat(lvalue);
+            rvalue = parseFloat(rvalue);
+            return {
+              '+': lvalue + rvalue,
+              '-': lvalue - rvalue,
+              '*': lvalue * rvalue,
+              '/': lvalue / rvalue,
+              '%': lvalue % rvalue,
+            }[operator];
+          },
+        }),
         options: {
           strict: true,
         },

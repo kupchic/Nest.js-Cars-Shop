@@ -120,7 +120,6 @@ export interface OrderModel extends mongoose.Model<OrderDocument> {
 OrderSchema.pre(
   /^(findOne|find)/,
   async function (next: CallbackWithoutResultAndOptionalError) {
-    console.log(PRODUCT_POPULATE_OPTIONS);
     this.populate([
       'user',
       {

@@ -2,6 +2,7 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { ConflictException, Injectable } from '@nestjs/common';
 import { User } from '../user/schemas';
 import { Order } from '../orders/schemas/order.schema';
+import 'dotenv/config';
 
 @Injectable()
 export class MailService {
@@ -27,8 +28,7 @@ export class MailService {
 
   async sendCreatedOrder(user: User, order: Order): Promise<void> {
     try {
-      console.log(order);
-      await this.mailerService.sendMail({
+      const result: any = await this.mailerService.sendMail({
         to: user.email,
         subject: 'New order from you, ' + user.firstName,
         template: './created-order',
@@ -36,7 +36,14 @@ export class MailService {
           name: user.firstName,
           order,
         },
+        attachments: [
+          {
+            filename: 'text1.txt',
+            content: 'hello world!',
+          },
+        ],
       });
+      console.log(result);
     } catch (e) {
       throw new ConflictException(
         'Something went wrong when sending email. Try again',

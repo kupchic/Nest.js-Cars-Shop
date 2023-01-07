@@ -13,6 +13,7 @@ import { ProductModelService } from './product-model/product-model.service';
 import { createMock } from '@golevelup/ts-jest';
 import { ProductBrandService } from './product-brand/product-brand.service';
 import {
+  CollectionsName,
   KeyValuePairs,
   ModelName,
   OrderByEnum,
@@ -481,7 +482,7 @@ function createSearchAggregateQuery(
     },
     {
       $lookup: {
-        from: ModelName.PRODUCT_BRAND,
+        from: CollectionsName.PRODUCTS_BRANDS,
         localField: 'productBrand',
         foreignField: '_id',
         as: 'productBrand',
@@ -503,7 +504,7 @@ function createSearchAggregateQuery(
     },
     {
       $lookup: {
-        from: ModelName.PRODUCT_BRAND,
+        from: CollectionsName.PRODUCTS_MODELS,
         localField: 'productModel',
         foreignField: '_id',
         as: 'productModel',

@@ -1,67 +1,85 @@
-<p>Hey {{name}},</p>
-<p>You are created an order</p>
+<html lang='en'>
+  <head>
+    <meta charset='utf-8' />
+    <title>You are created an order</title>
+    <base href='/' />
 
-<table>
-  <thead>
-    <tr>
-      <th>
-        Order Number
-      </th>
-      <th>
-        Order Time
-      </th>
-      <th>
-        Order Status
-      </th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>
-        {{order.orderNo}}
-      </td>
-      <td>
-        {{order.createdAt}}
-      </td>
-      <td>
-        {{order.status}}
-      </td>
-    </tr>
-  </tbody>
-</table>
+    <style>
+      table, td, th { border: 1px solid; } table { width: 100%; border-collapse:
+      collapse; } .total-sum{ color: green; }
+    </style>
+  </head>
+  <body>
+    <h1 style='color:red'>Hey {{name}},</h1>
+    <p>You are created an order</p>
 
-<table>
-  <thead>
-    <tr>
-      <th>
-        №
-      </th>
-      <th>
-        Product Name
-      </th>
-      <th>
-        Quantity
-      </th>
-      <th>
-        Product Price
-      </th>
-    </tr>
-  </thead>
-  <tbody>
-    {{#each order.products}}
-      <tr>
-        <td>1</td>
-        <td>{{this.product.description}}</td>
-        <td>{{this.quantity}}</td>
-        <td>{{this.product.price}}</td>
-      </tr>
-    {{/each}}
-    <tr>
-      <td>
-        order.totalSum
-      </td>
-    </tr>
-  </tbody>
-</table>
+    <table>
+      <thead>
+        <tr>
+          <th>
+            Order Number
+          </th>
+          <th>
+            Order Time
+          </th>
+          <th>
+            Order Status
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            {{order.orderNo}}
+          </td>
+          <td>
+            {{order.createdAt}}
+          </td>
+          <td>
+            {{order.status}}
+          </td>
+        </tr>
+      </tbody>
+    </table>
 
-<p>If you did not request this email you can safely ignore it.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>
+            №
+          </th>
+          <th>
+            Product Name
+          </th>
+          <th>
+            Quantity
+          </th>
+          <th>
+            Product Price
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each order.products}}
+          <tr>
+            <td>{{math @index '+' 1}}</td>
+            <td>{{this.product.description}}</td>
+            <td>{{this.quantity}}</td>
+            <td>{{this.product.price}}</td>
+          </tr>
+        {{/each}}
+        <tr>
+          <td colspan="3">
+            Total Sum
+          </td>
+          <td class='total-sum'>
+            {{order.totalSum}}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>If you did not request this email you can safely ignore it.</p>
+
+  </body>
+</html>

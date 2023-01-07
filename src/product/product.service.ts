@@ -15,6 +15,7 @@ import { CreateProductDto, ProductFiltersDto, UpdateProductDto } from './dto';
 import { ProductModelService } from './product-model/product-model.service';
 import { ProductBrandService } from './product-brand/product-brand.service';
 import {
+  CollectionsName,
   KeyValuePairs,
   ModelName,
   OrderByEnum,
@@ -96,7 +97,7 @@ export class ProductService {
           },
           {
             $lookup: {
-              from: ModelName.PRODUCT_BRAND,
+              from: CollectionsName.PRODUCTS_BRANDS,
               localField: 'productBrand',
               foreignField: '_id',
               as: 'productBrand',
@@ -118,7 +119,7 @@ export class ProductService {
           },
           {
             $lookup: {
-              from: ModelName.PRODUCT_MODEL,
+              from: CollectionsName.PRODUCTS_MODELS,
               localField: 'productModel',
               foreignField: '_id',
               as: 'productModel',
