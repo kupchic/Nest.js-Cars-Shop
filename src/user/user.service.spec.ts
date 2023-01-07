@@ -433,7 +433,20 @@ function createSearchAggregateQuery(
     { $match: filterMatch },
     {
       $facet: {
-        data: [{ $skip: pagination.skip }, { $limit: pagination.pageSize }],
+        data: [
+          { $skip: pagination.skip },
+          { $limit: pagination.pageSize },
+          {
+            $addFields: {
+              id: {
+                $toString: '$_id',
+              },
+            },
+          },
+          {
+            $unset: '_id',
+          },
+        ],
         pagination: [{ $count: 'totalRecords' }],
       },
     },
