@@ -24,6 +24,7 @@ import {
 const ordersOptions: ToObjectOptions = {
   virtuals: true,
   transform: function (doc, model) {
+    delete model.user?.orders;
     delete model._id;
     return model;
   },
@@ -33,7 +34,6 @@ const ordersOptions: ToObjectOptions = {
   collection: CollectionsName.ORDERS,
   toJSON: ordersOptions,
   versionKey: false,
-  virtuals: true,
   timestamps: true,
   statics: {
     async getTotalSum(productCatItems: ProductCartItemEntity[]) {
@@ -109,6 +109,7 @@ export class Order {
   id?: string;
   createdAt?: string;
   updatedAt?: string;
+  toJSON?: () => Order;
 }
 
 export const OrderSchema: mongoose.Schema<Order> =
@@ -159,17 +160,25 @@ OrderSchema.pre(
 OrderSchema.pre(
   'findOneAndUpdate',
   async function (next: CallbackWithoutResultAndOptionalError) {
-    const products: ProductCartItemEntity[] =
-      (this.getUpdate() as UpdateOrderDto).products || [];
-
-    if (products.length > PRODUCT_CART_SIZE_LIMIT) {
-      throw new ConflictException(PRODUCT_CART_SIZE_LIMIT_ERROR);
-    } else {
-      this.findOneAndUpdate(this.getFilter(), {
-        totalAmount: products.length,
-        totalSum: await (this.model as OrderModel).getTotalSum(products),
-      });
-      next();
+    this.populate({
+      path: 'products.product',
+      populate: PRODUCT_POPULATE_OPTIONS,
+    });
+    const products: ProductCartItemEntity[] = (
+      this.getUpdate() as UpdateOrderDto
+    ).products;
+    if (products) {
+      if (products.length > PRODUCT_CART_SIZE_LIMIT) {
+        throw new ConflictException(PRODUCT_CART_SIZE_LIMIT_ERROR);
+      } else {
+        this.setUpdate({
+          $set: {
+            totalAmount: products.length,
+            totalSum: await (this.model as OrderModel).getTotalSum(products),
+          },
+        });
+      }
     }
+    next();
   },
 );

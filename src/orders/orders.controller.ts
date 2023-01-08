@@ -1,13 +1,22 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
 import { Order } from './schemas/order.schema';
 import { GetCurrentUser, Roles } from '../common/decorators';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { OrderEntity } from './entities/order.entity';
 import { UserRoles } from '../user/model/enum/user-roles.enum';
 import { User } from '../user/schemas';
+import { MongoIdStringPipe } from '../common/pipes';
+import { ApproveDeclineOrderDto } from './dto/approve-decline-order.dto';
 
 @ApiTags('Orders Module')
 @Controller('orders')
@@ -38,26 +47,54 @@ export class OrdersController {
     type: [OrderEntity],
   })
   @Get('my')
-  findMy(@GetCurrentUser('id') userId: string): Promise<Order[]> {
-    return this.ordersService.findByUserId(userId);
+  findAllMy(@GetCurrentUser('id') userId: string): Promise<Order[]> {
+    return this.ordersService.findAllMy(userId);
   }
 
+  @ApiResponse({
+    type: OrderEntity,
+  })
+  @Get('my/:id')
+  async findOneMy(
+    @GetCurrentUser('id') userId: string,
+    @Param('id', MongoIdStringPipe) id: string,
+  ): Promise<Order> {
+    const order: Order = await this.ordersService.findOneMy(userId, id);
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    return order;
+  }
+
+  @Roles(UserRoles.ADMIN, UserRoles.MANAGER)
   @ApiResponse({
     type: OrderEntity,
   })
   @Get(':id')
-  findOne(@Param('id') id: string): Promise<Order> {
-    return this.ordersService.findOne(id);
+  async findOne(@Param('id', MongoIdStringPipe) id: string): Promise<Order> {
+    const order: Order = await this.ordersService.findOne(id);
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    return order;
   }
 
+  @Roles(UserRoles.ADMIN, UserRoles.MANAGER)
   @ApiResponse({
     type: OrderEntity,
   })
   @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateOrderDto: UpdateOrderDto,
+  async approveDecline(
+    @GetCurrentUser() user: User,
+    @Param('id', MongoIdStringPipe) id: string,
+    @Body() dto: ApproveDeclineOrderDto,
   ): Promise<Order> {
-    return this.ordersService.update(id, updateOrderDto);
+    const order: Order = await this.ordersService.approveDecline(id, user, dto);
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+    return order;
   }
 }

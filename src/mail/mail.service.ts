@@ -3,6 +3,7 @@ import { ConflictException, Injectable } from '@nestjs/common';
 import { User } from '../user/schemas';
 import { Order } from '../orders/schemas/order.schema';
 import 'dotenv/config';
+import { ORDER_STATUSES } from '../orders/model/enums/order-status';
 
 @Injectable()
 export class MailService {
@@ -26,24 +27,25 @@ export class MailService {
     }
   }
 
-  async sendCreatedOrder(user: User, order: Order): Promise<void> {
+  async orderNotice(
+    user: User,
+    order: Order,
+    isNew: boolean = false,
+  ): Promise<void> {
     try {
+      const status: string = ORDER_STATUSES[order.status];
       const result: any = await this.mailerService.sendMail({
         to: user.email,
-        subject: 'New order from you, ' + user.firstName,
+        subject: isNew
+          ? `Thanks for order, ${user.firstName}. Order #${order.orderNo}`
+          : `Hi ${user.firstName}. The order #${order.orderNo} is ${status}`,
         template: './created-order',
         context: {
-          name: user.firstName,
           order,
+          status,
+          updatedAt: new Date(order.updatedAt).toLocaleDateString(),
         },
-        attachments: [
-          {
-            filename: 'text1.txt',
-            content: 'hello world!',
-          },
-        ],
       });
-      console.log(result);
     } catch (e) {
       throw new ConflictException(
         'Something went wrong when sending email. Try again',

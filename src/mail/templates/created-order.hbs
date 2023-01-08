@@ -7,12 +7,13 @@
     <style>
       table, td, th { border: 1px solid; } table { width: 100%; border-collapse:
       collapse; } .total-sum{ color: green; }
+	    .status-cell{
+		    text-transform: capitalize;
+	    }
     </style>
   </head>
   <body>
-    <h1 style='color:red'>Hey {{name}},</h1>
-    <p>You are created an order</p>
-
+    <h1 style='color:red'>Order details</h1>
     <table>
       <thead>
         <tr>
@@ -20,7 +21,7 @@
             Order Number
           </th>
           <th>
-            Order Time
+            Order Update Time
           </th>
           <th>
             Order Status
@@ -33,15 +34,15 @@
             {{order.orderNo}}
           </td>
           <td>
-            {{order.createdAt}}
+            {{updatedAt}}
           </td>
-          <td>
-            {{order.status}}
+          <td class="status-cell">
+            {{status}}
           </td>
         </tr>
       </tbody>
     </table>
-
+    <hr/>
     <table>
       <thead>
         <tr>

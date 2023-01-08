@@ -30,4 +30,7 @@ export class UserDto {
 
   @ApiProperty({ type: ProductCartEntity })
   cart: ProductCartEntity;
+
+  @ApiProperty()
+  orders: string[];
 }

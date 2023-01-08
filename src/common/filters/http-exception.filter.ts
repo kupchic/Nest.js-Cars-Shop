@@ -8,9 +8,10 @@ import {
 import { Request, Response } from 'express';
 import { HttpArgumentsHost } from '@nestjs/common/interfaces';
 
-@Catch()
+@Catch(HttpException)
 export class HttpExceptionFilter implements ExceptionFilter {
   catch(exception: HttpException | any, host: ArgumentsHost): void {
+    console.log(exception.message);
     const ctx: HttpArgumentsHost = host.switchToHttp();
     const response: Response = ctx.getResponse<Response>();
     const request: Request = ctx.getRequest<Request>();
