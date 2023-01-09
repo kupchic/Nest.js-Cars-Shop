@@ -8,10 +8,9 @@ import {
 import { Request, Response } from 'express';
 import { HttpArgumentsHost } from '@nestjs/common/interfaces';
 
-@Catch(HttpException)
+@Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
   catch(exception: HttpException | any, host: ArgumentsHost): void {
-    console.log(exception.message);
     const ctx: HttpArgumentsHost = host.switchToHttp();
     const response: Response = ctx.getResponse<Response>();
     const request: Request = ctx.getRequest<Request>();
@@ -23,11 +22,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
       statusCode: status,
       message:
         status === HttpStatus.INTERNAL_SERVER_ERROR
-          ? 'Internal server error'
+          ? 'Internal Server Error'
           : exception.message,
       timestamp: new Date().toISOString(),
       path: request.url,
-      ...exception.response,
     });
   }
 }

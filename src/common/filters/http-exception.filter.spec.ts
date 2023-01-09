@@ -34,20 +34,41 @@ describe('System header validation service', () => {
     expect(filter).toBeDefined();
   });
 
-  it('not internal error catch', () => {
-    filter.catch(
-      new HttpException('Http exception', HttpStatus.BAD_REQUEST),
-      mockArgumentsHost,
+  it('should catch not internal error ', () => {
+    // given
+    const exception: HttpException = new HttpException(
+      'Http exception',
+      HttpStatus.BAD_REQUEST,
     );
-    expect(mockHttpArgumentsHost).toBeCalledTimes(1);
-    expect(mockHttpArgumentsHost).toBeCalledWith();
-    expect(mockGetResponse).toBeCalledTimes(1);
-    expect(mockGetResponse).toBeCalledWith();
-    expect(mockStatus).toBeCalledTimes(1);
-    expect(mockStatus).toBeCalledWith(HttpStatus.BAD_REQUEST);
-    expect(mockJson).toBeCalledTimes(1);
-    // expect(mockJson).toBeCalledWith({
-    //   message: 'Http exception',
-    // }); //TODO
+    // when
+    filter.catch(exception, mockArgumentsHost);
+    // then
+    expect(mockHttpArgumentsHost).nthCalledWith(1);
+    expect(mockGetResponse).nthCalledWith(1);
+    expect(mockStatus).nthCalledWith(1, HttpStatus.BAD_REQUEST);
+    const res: any = mockJson.mock.calls[0][0];
+    expect(res).toMatchObject({
+      statusCode: HttpStatus.BAD_REQUEST,
+      message: exception.message,
+      path: mockUrl,
+    });
+    expect(res.timestamp).toBeDefined();
+  });
+  it('should catch internal error', () => {
+    // given
+    const exception: HttpException = null;
+    // when
+    filter.catch(exception, mockArgumentsHost);
+    // then
+    expect(mockHttpArgumentsHost).nthCalledWith(1);
+    expect(mockGetResponse).nthCalledWith(1);
+    expect(mockStatus).nthCalledWith(1, HttpStatus.INTERNAL_SERVER_ERROR);
+    const res: any = mockJson.mock.calls[0][0];
+    expect(res).toMatchObject({
+      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+      message: 'Internal Server Error',
+      path: mockUrl,
+    });
+    expect(res.timestamp).toBeDefined();
   });
 });
