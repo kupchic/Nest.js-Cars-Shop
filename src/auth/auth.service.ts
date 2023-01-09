@@ -190,6 +190,22 @@ export class AuthService {
     }
   }
 
+  async verifyUserWithJwtPayload(token: string): Promise<User> {
+    try {
+      if (!token) {
+        return null;
+      }
+      const payload: UserJwtPayload = this.jwtService.verify(token, {
+        secret: process.env.JWT_SECRET,
+        ignoreExpiration: false,
+      });
+      const user: User = await this.userService.findById(payload.id);
+      return user;
+    } catch (e) {
+      throw e;
+    }
+  }
+
   private _generateResetPassSecret(user: User): string {
     return process.env.JWT_SECRET + user.id + user.password;
   }
