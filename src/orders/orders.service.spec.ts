@@ -4,6 +4,7 @@ import { getModelToken } from '@nestjs/mongoose';
 import { ModelName } from '../common/model';
 import { createMock } from '@golevelup/ts-jest';
 import { MailService } from '../mail/mail.service';
+import { OrdersGateway } from './orders.gateway';
 
 describe('OrdersService', () => {
   let service: OrdersService;
@@ -26,6 +27,10 @@ describe('OrdersService', () => {
         {
           provide: MailService,
           useValue: createMock<MailService>(),
+        },
+        {
+          provide: OrdersGateway,
+          useValue: createMock<OrdersGateway>(),
         },
       ],
     }).compile();

@@ -8,27 +8,29 @@ import {
   WsException,
 } from '@nestjs/websockets';
 import { Order } from './schemas/order.schema';
-import { Namespace, Socket } from 'socket.io';
-import { ForbiddenException, UseGuards } from '@nestjs/common';
+import { Server, Socket } from 'socket.io';
+import { ForbiddenException, Logger, UseGuards } from '@nestjs/common';
 import { AuthService } from '../auth/auth.service';
 import { User } from '../user/schemas';
-import { WsJwtGuard } from '../auth/guards/ws-jwt.guard';
+import { WsJwtGuard } from '../common/guards/ws-jwt.guard';
 
 @WebSocketGateway({ namespace: 'orders', transports: ['websocket'] })
 export class OrdersGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
+  private readonly _logger = new Logger(OrdersGateway.name);
   @WebSocketServer()
-  private server: Namespace;
+  private _server: Server;
 
   constructor(private readonly authService: AuthService) {}
 
-  afterInit(server: Namespace): void {
-    this.server.use(async (socket: Socket, next: any) => {
-      const authToken: string = (
-        socket.handshake.auth.auth_token || socket.handshake.headers?.auth_token
-      )?.replace('Bearer ', '');
+  afterInit(server: Server): void {
+    server.use(async (socket: Socket, next: any) => {
       try {
+        const authToken: string = (
+          socket.handshake.auth.auth_token ||
+          socket.handshake.headers.auth_token
+        )?.replace('Bearer ', '');
         const user: User = await this.authService.verifyUserWithJwtPayload(
           authToken,
         );
@@ -46,23 +48,23 @@ export class OrdersGateway
   }
 
   handleConnection(client: Socket): void {
-    const sockets: Map<string, Socket> = this.server.sockets;
-    console.log(`WS client with id ${client.id} connected,`);
-    console.log(`Number of connected sockets:${sockets.size} `);
+    const sockets: Map<string, Socket> = this._server.sockets as any;
+    this._logger.log(`WS client with id ${client.id} connected,`);
+    this._logger.log(`Number of connected sockets:${sockets.size} `);
   }
   handleDisconnect(client: Socket): void {
-    const sockets: Map<string, Socket> = this.server.sockets;
-    console.log(`WS client with id ${client.id} disconnected,`);
-    console.log(`Number of connected sockets:${sockets.size} `);
+    const sockets: Map<string, Socket> = this._server.sockets as any;
+    this._logger.log(`WS client with id ${client.id} disconnected,`);
+    this._logger.log(`Number of connected sockets:${sockets.size} `);
   }
 
   emitOrderApproveDecline(order: Order): void {
-    this.server.emit('order-status-updated', order);
+    this._server.emit('order-status-updated', order);
   }
 
   @UseGuards(WsJwtGuard)
   @SubscribeMessage('order-status-updated')
   handleOrderStatusUpdate(socket: Socket, data: Order): void {
-    console.log(data);
+    this._logger.log(data);
   }
 }
