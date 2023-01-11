@@ -16,6 +16,7 @@ export class OrdersService {
     private mailService: MailService,
     private ordersGateway: OrdersGateway,
   ) {}
+
   async create(createOrderDto: CreateOrderDto, user: User): Promise<Order> {
     let order: Order = await this.orderModel.create({
       products: createOrderDto.products,

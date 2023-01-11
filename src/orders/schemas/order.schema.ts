@@ -115,70 +115,66 @@ export class Order {
 export const OrderSchema: mongoose.Schema<Order> =
   SchemaFactory.createForClass(Order);
 export type OrderDocument = Order & Document;
+
 export interface OrderModel extends mongoose.Model<OrderDocument> {
   getTotalSum(products: ProductCartItemEntity[]): Promise<number>;
 }
-OrderSchema.pre(
-  /^(findOne|find)/,
-  async function (next: CallbackWithoutResultAndOptionalError) {
-    this.populate([
-      'user',
-      {
-        path: 'products.product',
-        populate: PRODUCT_POPULATE_OPTIONS,
-      },
-    ]);
-    next();
-  },
-);
 
-OrderSchema.pre(
-  'save',
-  async function (next: CallbackWithoutResultAndOptionalError) {
-    const products: ProductCartItemEntity[] = this.products || [];
+OrderSchema.pre(/^(findOne|find)/, orderPopulating);
+OrderSchema.pre('save', orderPreSaveHook);
+OrderSchema.pre('findOneAndUpdate', orderPreFindOneAndUpdateHook);
+
+export function orderPopulating(next: CallbackWithoutResultAndOptionalError) {
+  this.populate([
+    'user',
+    {
+      path: 'products.product',
+      populate: PRODUCT_POPULATE_OPTIONS,
+    },
+  ]);
+  next();
+}
+
+export async function orderPreSaveHook(
+  next: CallbackWithoutResultAndOptionalError,
+) {
+  const products: ProductCartItemEntity[] = this.products || [];
+  if (products.length > PRODUCT_CART_SIZE_LIMIT) {
+    throw new ConflictException(PRODUCT_CART_SIZE_LIMIT_ERROR);
+  } else {
+    this.totalAmount = products.length;
+    this.totalSum = await (
+      this.$model(ModelName.ORDER) as OrderModel
+    ).getTotalSum(products);
+    this.orderNo = await this.$model(ModelName.ORDER).countDocuments();
+    await this.$model(ModelName.USER).updateOne(
+      { _id: this.user },
+      { $push: { orders: this.id } },
+    ); // add order id to user orders
+    await this.$model(ModelName.PRODUCT_CART).findOneAndUpdate(
+      { user: this.user },
+      { $set: { products: [] } },
+    ); // empty user cart
+    next();
+  }
+}
+
+export async function orderPreFindOneAndUpdateHook(
+  next: CallbackWithoutResultAndOptionalError,
+) {
+  const products: ProductCartItemEntity[] = (this.getUpdate() as UpdateOrderDto)
+    ?.products;
+  if (products) {
     if (products.length > PRODUCT_CART_SIZE_LIMIT) {
       throw new ConflictException(PRODUCT_CART_SIZE_LIMIT_ERROR);
     } else {
-      this.totalAmount = products.length;
-      this.totalSum = await (
-        this.$model(ModelName.ORDER) as OrderModel
-      ).getTotalSum(products);
-      this.orderNo = await this.$model(ModelName.ORDER).countDocuments();
-      await this.$model(ModelName.USER).updateOne(
-        { _id: this.user },
-        { $push: { orders: this.id } },
-      ); // add order id to user orders
-      await this.$model(ModelName.PRODUCT_CART).findOneAndUpdate(
-        { user: this.user },
-        { $set: { products: [] } },
-      ); // empty user cart
-      next();
+      this.setUpdate({
+        $set: {
+          totalAmount: products.length,
+          totalSum: await (this.model as OrderModel).getTotalSum(products),
+        },
+      });
     }
-  },
-);
-
-OrderSchema.pre(
-  'findOneAndUpdate',
-  async function (next: CallbackWithoutResultAndOptionalError) {
-    this.populate({
-      path: 'products.product',
-      populate: PRODUCT_POPULATE_OPTIONS,
-    });
-    const products: ProductCartItemEntity[] = (
-      this.getUpdate() as UpdateOrderDto
-    ).products;
-    if (products) {
-      if (products.length > PRODUCT_CART_SIZE_LIMIT) {
-        throw new ConflictException(PRODUCT_CART_SIZE_LIMIT_ERROR);
-      } else {
-        this.setUpdate({
-          $set: {
-            totalAmount: products.length,
-            totalSum: await (this.model as OrderModel).getTotalSum(products),
-          },
-        });
-      }
-    }
-    next();
-  },
-);
+  }
+  orderPopulating.call(this, next);
+}
