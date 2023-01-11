@@ -10,7 +10,7 @@ import {
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { Order } from './schemas/order.schema';
-import { GetCurrentUser, Public, Roles } from '../common/decorators';
+import { GetCurrentUser, Roles } from '../common/decorators';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { OrderEntity } from './entities/order.entity';
 import { UserRoles } from '../user/model/enum/user-roles.enum';
@@ -34,8 +34,7 @@ export class OrdersController {
     return this.ordersService.create(createOrderDto, user);
   }
 
-  // @Roles(UserRoles.ADMIN, UserRoles.MANAGER)
-  @Public()
+  @Roles(UserRoles.ADMIN, UserRoles.MANAGER)
   @ApiResponse({
     type: [OrderEntity],
   })
