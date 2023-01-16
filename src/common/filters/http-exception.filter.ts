@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { HttpArgumentsHost } from '@nestjs/common/interfaces';
+import { ResponseError } from '../../auth/types';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -26,6 +27,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
           : exception.message,
       timestamp: new Date().toISOString(),
       path: request.url,
-    });
+    } as ResponseError);
   }
 }
