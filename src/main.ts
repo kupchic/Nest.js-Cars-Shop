@@ -3,6 +3,7 @@ import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { INestApplication } from '@nestjs/common';
 import { RolesGuard } from './common/guards/roles.guard';
+import 'dotenv/config';
 
 async function bootstrap(): Promise<any> {
   const PORT: string = process.env.PORT || '5000';

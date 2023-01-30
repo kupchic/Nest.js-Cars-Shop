@@ -7,23 +7,26 @@ import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { FilterQuery, Model } from 'mongoose';
 import {
   Product,
-  PRODUCT_BRANDS_COLLECTION_NAME,
-  PRODUCT_MODELS_COLLECTION_NAME,
   ProductBrand,
   ProductDocument,
   ProductModel,
-  PRODUCTS_COLLECTION_NAME,
 } from './schemas';
 import { CreateProductDto, ProductFiltersDto, UpdateProductDto } from './dto';
 import { ProductModelService } from './product-model/product-model.service';
 import { ProductBrandService } from './product-brand/product-brand.service';
-import { KeyValuePairs, OrderByEnum, SearchQueryDto } from '../common/model';
+import {
+  CollectionsName,
+  KeyValuePairs,
+  ModelName,
+  OrderByEnum,
+  SearchQueryDto,
+} from '../common/model';
 import { IPaginatedProductResponse } from './model';
 
 @Injectable()
 export class ProductService {
   constructor(
-    @InjectModel(PRODUCTS_COLLECTION_NAME)
+    @InjectModel(ModelName.PRODUCT)
     private productModel: Model<ProductDocument>,
     private productModelService: ProductModelService,
     private productBrandService: ProductBrandService,
@@ -94,7 +97,7 @@ export class ProductService {
           },
           {
             $lookup: {
-              from: PRODUCT_BRANDS_COLLECTION_NAME,
+              from: CollectionsName.PRODUCTS_BRANDS,
               localField: 'productBrand',
               foreignField: '_id',
               as: 'productBrand',
@@ -116,7 +119,7 @@ export class ProductService {
           },
           {
             $lookup: {
-              from: PRODUCT_MODELS_COLLECTION_NAME,
+              from: CollectionsName.PRODUCTS_MODELS,
               localField: 'productModel',
               foreignField: '_id',
               as: 'productModel',

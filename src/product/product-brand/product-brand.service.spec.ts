@@ -1,13 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
-import {
-  PRODUCT_BRANDS_COLLECTION_NAME,
-  ProductBrand,
-  ProductModelDocument,
-} from '../schemas';
+import { ProductBrand, ProductModelDocument } from '../schemas';
 import { Model } from 'mongoose';
 import { BadRequestException } from '@nestjs/common';
 import { ProductBrandService } from './product-brand.service';
+import { ModelName } from '../../common/model';
 import SpyInstance = jest.SpyInstance;
 
 describe('ProductBrandService', () => {
@@ -23,7 +20,7 @@ describe('ProductBrandService', () => {
       providers: [
         ProductBrandService,
         {
-          provide: getModelToken(PRODUCT_BRANDS_COLLECTION_NAME),
+          provide: getModelToken(ModelName.PRODUCT_BRAND),
           useValue: {
             find: jest.fn(),
             findById: jest.fn(),
@@ -36,7 +33,7 @@ describe('ProductBrandService', () => {
     }).compile();
 
     service = module.get<ProductBrandService>(ProductBrandService);
-    mockModel = module.get(getModelToken(PRODUCT_BRANDS_COLLECTION_NAME));
+    mockModel = module.get(getModelToken(ModelName.PRODUCT_BRAND));
   });
 
   it('should be defined', () => {

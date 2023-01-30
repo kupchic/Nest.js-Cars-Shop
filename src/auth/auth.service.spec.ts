@@ -39,6 +39,8 @@ describe('AuthService', () => {
     lastName: 'Tester',
     phone: '8029',
     isBlocked: false,
+    cart: 's',
+    orders: [],
   };
 
   beforeEach(async () => {

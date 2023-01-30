@@ -1,0 +1,86 @@
+<html lang='en'>
+  <head>
+    <meta charset='utf-8' />
+    <title>You are created an order</title>
+    <base href='/' />
+
+    <style>
+      table, td, th { border: 1px solid; } table { width: 100%; border-collapse:
+      collapse; } .total-sum{ color: green; }
+	    .status-cell{
+		    text-transform: capitalize;
+	    }
+    </style>
+  </head>
+  <body>
+    <h1 style='color:red'>Order details</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>
+            Order Number
+          </th>
+          <th>
+            Order Update Time
+          </th>
+          <th>
+            Order Status
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            {{order.orderNo}}
+          </td>
+          <td>
+            {{updatedAt}}
+          </td>
+          <td class="status-cell">
+            {{status}}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <hr/>
+    <table>
+      <thead>
+        <tr>
+          <th>
+            №
+          </th>
+          <th>
+            Product Name
+          </th>
+          <th>
+            Quantity
+          </th>
+          <th>
+            Product Price
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each order.products}}
+          <tr>
+            <td>{{math @index '+' 1}}</td>
+            <td>{{this.product.description}}</td>
+            <td>{{this.quantity}}</td>
+            <td>{{this.product.price}}</td>
+          </tr>
+        {{/each}}
+        <tr>
+          <td colspan="3">
+            Total Sum
+          </td>
+          <td class='total-sum'>
+            {{order.totalSum}}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>If you did not request this email you can safely ignore it.</p>
+
+  </body>
+</html>

@@ -1,15 +1,16 @@
 import { Module, ValidationPipe } from '@nestjs/common';
 import { ProductModule } from './product/product.module';
-import { ManagerModule } from './manager/manager.module';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './user/user.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.module';
-import { APP_GUARD, APP_PIPE } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guards';
 import { MailModule } from './mail/mail.module';
 import { MongoIdStringPipe } from './common/pipes';
 import 'dotenv/config';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { OrdersModule } from './orders/orders.module';
 
 @Module({
   imports: [
@@ -20,11 +21,11 @@ import 'dotenv/config';
     MongooseModule.forRoot(process.env.DB_HOST, {
       dbName: process.env.DB_NAME,
     }),
-    ManagerModule,
     ProductModule,
     UserModule,
     AuthModule,
     MailModule,
+    OrdersModule,
   ],
   controllers: [],
   providers: [
@@ -39,6 +40,10 @@ import 'dotenv/config';
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
     },
     MongoIdStringPipe,
   ],

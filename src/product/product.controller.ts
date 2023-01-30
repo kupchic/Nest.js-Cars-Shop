@@ -61,11 +61,18 @@ export class ProductController {
   })
   @Roles(UserRoles.ADMIN)
   @Put(':id')
-  updateProduct(
+  async updateProduct(
     @Param('id', MongoIdStringPipe) id: string,
     @Body() updateDto: UpdateProductDto,
   ): Promise<Product> {
-    return this.productService.updateProduct(id, updateDto);
+    const product: Product = await this.productService.updateProduct(
+      id,
+      updateDto,
+    );
+    if (!product) {
+      throw new NotFoundException('Product not Found');
+    }
+    return product;
   }
 
   @Roles(UserRoles.ADMIN)
