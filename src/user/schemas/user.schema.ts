@@ -109,20 +109,12 @@ UserSchema.pre(
 );
 
 UserSchema.pre(
-  'findOneAndDelete',
+  /^(findOneAndDelete|deleteOne)/,
   async function (next: CallbackWithoutResultAndOptionalError) {
     const user: UserDocument = await this.model.findOne(this.getFilter());
     await this.model.db
       .model(ModelName.PRODUCT_CART)
       .findByIdAndDelete(user.cart);
-    next();
-  },
-);
-
-UserSchema.pre(
-  'deleteOne',
-  async function (next: CallbackWithoutResultAndOptionalError) {
-    await this.$model(ModelName.PRODUCT_CART).findByIdAndDelete(this.cart);
     next();
   },
 );

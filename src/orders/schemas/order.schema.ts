@@ -101,6 +101,7 @@ export class Order {
 
   @Prop({
     required: true,
+    index: true,
     enum: OrderStatus,
     default: () => OrderStatus.IN_PROGRESS,
   })
@@ -124,7 +125,9 @@ OrderSchema.pre(/^(findOne|find)/, orderPopulating);
 OrderSchema.pre('save', orderPreSaveHook);
 OrderSchema.pre('findOneAndUpdate', orderPreFindOneAndUpdateHook);
 
-export function orderPopulating(next: CallbackWithoutResultAndOptionalError) {
+export function orderPopulating(
+  next: CallbackWithoutResultAndOptionalError,
+): void {
   this.populate([
     'user',
     {
@@ -137,7 +140,7 @@ export function orderPopulating(next: CallbackWithoutResultAndOptionalError) {
 
 export async function orderPreSaveHook(
   next: CallbackWithoutResultAndOptionalError,
-) {
+): Promise<void> {
   const products: ProductCartItemEntity[] = this.products || [];
   if (products.length > PRODUCT_CART_SIZE_LIMIT) {
     throw new ConflictException(PRODUCT_CART_SIZE_LIMIT_ERROR);
@@ -161,7 +164,7 @@ export async function orderPreSaveHook(
 
 export async function orderPreFindOneAndUpdateHook(
   next: CallbackWithoutResultAndOptionalError,
-) {
+): Promise<void> {
   const products: ProductCartItemEntity[] = (this.getUpdate() as UpdateOrderDto)
     ?.products;
   if (products) {
