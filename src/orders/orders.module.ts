@@ -8,10 +8,12 @@ import { ModelName } from '../common/model';
 import { OrdersGateway } from './orders.gateway';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthModule } from '../auth/auth.module';
+import { StatisticsController } from './statistics/statistics.controller';
+import { StatisticsService } from './statistics/statistics.service';
 
 @Module({
-  controllers: [OrdersController],
-  providers: [OrdersService, MailService, OrdersGateway],
+  controllers: [StatisticsController, OrdersController],
+  providers: [OrdersService, MailService, OrdersGateway, StatisticsService],
   imports: [
     AuthModule,
     JwtModule,
