@@ -1,0 +1,18 @@
+steps:
+#  - name: 'docker/compose:1.26.2'
+#    args: [ 'up', '-d' ]
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [ 'build', '-t', 'gcr.io/carshop-nestjs/aliaksandr-kupchenia-app', '.' ]
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/carshop-nestjs/aliaksandr-kupchenia-app']
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args: [
+      'run',
+      'deploy',
+      'carshop-nestjs',
+      '--image=gcr.io/carshop-nestjs/aliaksandr-kupchenia-app',
+      '--platform=managed',
+      '--region=us-central1',
+      '--allow-unauthenticated',
+      '--port', '8080',
+    ]

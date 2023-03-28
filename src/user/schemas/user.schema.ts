@@ -79,7 +79,7 @@ export class User {
     required: false,
     type: 'String',
   })
-  refresh_token: string;
+  refresh_token?: string;
 
   id?: string;
 }

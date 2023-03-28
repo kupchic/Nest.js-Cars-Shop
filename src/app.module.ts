@@ -15,11 +15,13 @@ import { OrdersModule } from './orders/orders.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: '.env',
+      envFilePath: '.env.example',
       isGlobal: true,
     }),
     MongooseModule.forRoot(process.env.DB_HOST, {
       dbName: process.env.DB_NAME,
+      user: process.env.DB_USER,
+      pass: process.env.DB_PASS,
     }),
     ProductModule,
     UserModule,
