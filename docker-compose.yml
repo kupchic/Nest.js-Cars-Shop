@@ -1,0 +1,23 @@
+version: '3.8'
+services:
+  app:
+    container_name: car-shop_app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - ${PORT}:${PORT}
+    env_file:
+      - .env.example
+    depends_on:
+      - mongodb
+  mongodb:
+    container_name: car-shop_db
+    env_file:
+      - .env.example
+    image: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${DB_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${DB_PASS}
+    ports:
+      - 27017:27017
